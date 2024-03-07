@@ -168,6 +168,9 @@ class TCLogger(logging.Logger):
 
     def route_log(self, method, msg, *args, **kwargs):
         level, method = method
+        # if level is lower (less important) than self.log_level, do not log
+        if self.LEVEL_NAMES[level] < self.LEVEL_NAMES[self.log_level]:
+            return
         functools.partial(self.log, level, method, msg)(*args, **kwargs)
 
     def err(self, msg: str = "", *args, **kwargs):
