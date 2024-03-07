@@ -1,11 +1,12 @@
 [project]
 name = "tclogger"
-version = "0.8.1"
+version = "0.8.2"
 authors = [
     { name="Hansimov" },
 ]
 description = "Python terminal colored logger"
 readme = "README.md"
+license = {file = "LICENSE"}
 requires-python = ">=3.6"
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -17,3 +18,4 @@ dependencies = [ "termcolor" ]
 [project.urls]
 Homepage = "https://github.com/Hansimov/tclogger"
 Issues = "https://github.com/Hansimov/tclogger/issues"
+Changelog = "https://github.com/Hansimov/tclogger/blob/main/CHANGELOG.md"
