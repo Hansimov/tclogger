@@ -287,6 +287,8 @@ class OSEnver:
     def __init__(self, secrets_json=None):
         if not secrets_json:
             self.secrets_json = Path(__file__).parent / "secrets.json"
+        else:
+            self.secrets_json = secrets_json
         self.load_secrets()
 
     def load_secrets(self):
