@@ -306,6 +306,3 @@ class OSEnver:
             return self.secrets.get(key, os.getenv(key, None))
         else:
             return dict(self.secrets.items())
-
-
-enver = OSEnver()
