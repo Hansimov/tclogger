@@ -227,8 +227,8 @@ def shell_cmd(cmd, getoutput=False, showcmd=True, env=None):
 
 
 class Runtimer:
-    def __init__(self, is_log=True):
-        self.is_log = is_log
+    def __init__(self, verbose=True):
+        self.verbose = verbose
 
     def __enter__(self):
         self.start_time()
@@ -259,7 +259,7 @@ class Runtimer:
             "end": "End",
             "elapsed": "Elapsed",
         }
-        if self.is_log:
+        if self.verbose:
             time_str = add_fillers(
                 colored(
                     f"{time_types[time_type]} time: [ {self.time2str(t)} ]",
@@ -271,8 +271,8 @@ class Runtimer:
 
     # Convert time to string
     def time2str(self, t, unit_sep=" "):
-        datetime_str_format = "%Y-%m-%d %H:%M:%S"
         if isinstance(t, datetime.datetime):
+            datetime_str_format = "%Y-%m-%d %H:%M:%S"
             return t.strftime(datetime_str_format)
         elif isinstance(t, datetime.timedelta):
             hours = t.seconds // 3600
@@ -280,10 +280,10 @@ class Runtimer:
             minutes = (t.seconds // 60) % 60
             minute_str = f"{minutes:>2}{unit_sep}min" if minutes > 0 else ""
             seconds = t.seconds % 60
-            miliseconds = t.microseconds // 1000
-            precised_seconds = seconds + miliseconds / 1000
+            milliseconds = t.microseconds // 1000
+            precised_seconds = seconds + milliseconds / 1000
             second_str = (
-                f"{precised_seconds:>.1f}{unit_sep}s" if precised_seconds > 0 else ""
+                f"{precised_seconds:>.1f}{unit_sep}s" if precised_seconds >= 0 else ""
             )
             time_str = " ".join([hour_str, minute_str, second_str]).strip()
             return time_str
