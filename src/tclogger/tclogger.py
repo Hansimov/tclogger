@@ -3,6 +3,7 @@ import functools
 import inspect
 import json
 import logging
+import math
 import os
 import shutil
 import subprocess
@@ -35,6 +36,13 @@ def add_fillers(text, filler="=", fill_side="both"):
 
     filled_str = f"{leading_fill_str}{text}{trailing_fill_str}"
     return filled_str
+
+
+# calculate digits of integer
+def count_digits(num, base: int = 10):
+    if num == 0:
+        return 0
+    return int(math.log(num, base) + 1)
 
 
 class TCLogger(logging.Logger):
