@@ -10,10 +10,10 @@ pip install tclogger
 
 ## Usage
 ```py
-from tclogger import logger, count_digits, Runtimer
+from tclogger import logger, int_bits, Runtimer
 with Runtimer():
     logger.note("hello world")
-    logger.mesg(count_digits(1234567890))
+    logger.mesg(int_bits(1234567890))
 
 shell_cmd("ls -l")
 ```

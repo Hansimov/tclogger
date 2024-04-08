@@ -1,1 +1,1 @@
-from .tclogger import logger, count_digits, shell_cmd, OSEnver, Runtimer
+from .tclogger import logger, int_bits, shell_cmd, OSEnver, Runtimer
