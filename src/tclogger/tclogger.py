@@ -38,8 +38,8 @@ def add_fillers(text, filler="=", fill_side="both"):
     return filled_str
 
 
-# calculate digits of integer
-def count_digits(num, base: int = 10):
+# calculate bits of integer in base
+def int_bits(num, base: int = 10):
     if num == 0:
         return 0
     return int(math.log(num, base) + 1)
@@ -307,7 +307,7 @@ class OSEnver:
                 for key, value in secrets.items():
                     self.secrets[key] = value
         except Exception as e:
-            logger.err(f"Loading local secrets: {e}")
+            logger.warn(f"Loading local secrets: {e}")
 
     def __getitem__(self, key=None):
         if key:
