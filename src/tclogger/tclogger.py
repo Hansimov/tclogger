@@ -1,4 +1,3 @@
-import datetime
 import functools
 import inspect
 import json
@@ -8,9 +7,38 @@ import os
 import shutil
 import subprocess
 
+from datetime import datetime, timedelta
 from pathlib import Path
 from requests.structures import CaseInsensitiveDict
 from termcolor import colored
+
+"""Time utils"""
+
+
+def get_now_ts() -> int:
+    return int(datetime.now().timestamp())
+
+
+def get_now_str() -> str:
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def ts_to_str(ts: int) -> str:
+    return datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
+
+
+def str_to_ts(s: str) -> int:
+    return int(datetime.fromisoformat(s).timestamp())
+
+
+def get_now_ts_str() -> tuple[int, str]:
+    now = datetime.now()
+    now_ts = int(now.timestamp())
+    now_str = now.strftime("%Y-%m-%d %H:%M:%S")
+    return now_ts, now_str
+
+
+"""Logger utils"""
 
 
 def add_fillers(text, filler="=", fill_side="both"):
@@ -215,6 +243,9 @@ class TCLogger(logging.Logger):
 logger = TCLogger()
 
 
+"""Shell utils"""
+
+
 def shell_cmd(cmd, getoutput=False, showcmd=True, env=None):
     if showcmd:
         logger.info(colored(f"\n$ [{os.getcwd()}]", "light_blue"))
@@ -224,6 +255,9 @@ def shell_cmd(cmd, getoutput=False, showcmd=True, env=None):
         return output
     else:
         subprocess.run(cmd, shell=True, env=env)
+
+
+"""Runtime utils"""
 
 
 class Runtimer:
@@ -239,12 +273,12 @@ class Runtimer:
         self.elapsed_time()
 
     def start_time(self):
-        self.t1 = datetime.datetime.now()
+        self.t1 = datetime.now()
         self.logger_time("start", self.t1)
         return self.t1
 
     def end_time(self):
-        self.t2 = datetime.datetime.now()
+        self.t2 = datetime.now()
         self.logger_time("end", self.t2)
         return self.t2
 
@@ -271,10 +305,10 @@ class Runtimer:
 
     # Convert time to string
     def time2str(self, t, unit_sep=" "):
-        if isinstance(t, datetime.datetime):
+        if isinstance(t, datetime):
             datetime_str_format = "%Y-%m-%d %H:%M:%S"
             return t.strftime(datetime_str_format)
-        elif isinstance(t, datetime.timedelta):
+        elif isinstance(t, timedelta):
             hours = t.seconds // 3600
             hour_str = f"{hours}{unit_sep}hr" if hours > 0 else ""
             minutes = (t.seconds // 60) % 60
@@ -289,6 +323,9 @@ class Runtimer:
             return time_str
         else:
             return str(t)
+
+
+"""OS environment utils"""
 
 
 class OSEnver:
