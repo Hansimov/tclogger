@@ -1,44 +1,12 @@
+"""Logger utils"""
+
 import functools
 import inspect
-import json
 import logging
-import math
-import os
+
 import shutil
-import subprocess
 
-from datetime import datetime, timedelta
-from pathlib import Path
-from requests.structures import CaseInsensitiveDict
 from termcolor import colored
-
-"""Time utils"""
-
-
-def get_now_ts() -> int:
-    return int(datetime.now().timestamp())
-
-
-def get_now_str() -> str:
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-
-def ts_to_str(ts: int) -> str:
-    return datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
-
-
-def str_to_ts(s: str) -> int:
-    return int(datetime.fromisoformat(s).timestamp())
-
-
-def get_now_ts_str() -> tuple[int, str]:
-    now = datetime.now()
-    now_ts = int(now.timestamp())
-    now_str = now.strftime("%Y-%m-%d %H:%M:%S")
-    return now_ts, now_str
-
-
-"""Logger utils"""
 
 
 def add_fillers(text, filler="=", fill_side="both"):
@@ -64,13 +32,6 @@ def add_fillers(text, filler="=", fill_side="both"):
 
     filled_str = f"{leading_fill_str}{text}{trailing_fill_str}"
     return filled_str
-
-
-# calculate bits of integer in base
-def int_bits(num, base: int = 10):
-    if num == 0:
-        return 0
-    return int(math.log(num, base) + 1)
 
 
 class TCLogger(logging.Logger):
@@ -241,113 +202,3 @@ class TCLogger(logging.Logger):
 
 
 logger = TCLogger()
-
-
-"""Shell utils"""
-
-
-def shell_cmd(cmd, getoutput=False, showcmd=True, env=None):
-    if showcmd:
-        logger.info(colored(f"\n$ [{os.getcwd()}]", "light_blue"))
-        logger.info(colored(f"  $ {cmd}\n", "light_cyan"))
-    if getoutput:
-        output = subprocess.getoutput(cmd, env=env)
-        return output
-    else:
-        subprocess.run(cmd, shell=True, env=env)
-
-
-"""Runtime utils"""
-
-
-class Runtimer:
-    def __init__(self, verbose=True):
-        self.verbose = verbose
-
-    def __enter__(self):
-        self.start_time()
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.end_time()
-        self.elapsed_time()
-
-    def start_time(self):
-        self.t1 = datetime.now()
-        self.logger_time("start", self.t1)
-        return self.t1
-
-    def end_time(self):
-        self.t2 = datetime.now()
-        self.logger_time("end", self.t2)
-        return self.t2
-
-    def elapsed_time(self):
-        self.dt = self.t2 - self.t1
-        self.logger_time("elapsed", self.dt)
-        return self.dt
-
-    def logger_time(self, time_type, t):
-        time_types = {
-            "start": "Start",
-            "end": "End",
-            "elapsed": "Elapsed",
-        }
-        if self.verbose:
-            time_str = add_fillers(
-                colored(
-                    f"{time_types[time_type]} time: [ {self.time2str(t)} ]",
-                    "light_magenta",
-                ),
-                fill_side="both",
-            )
-            logger.line(time_str)
-
-    # Convert time to string
-    def time2str(self, t, unit_sep=" "):
-        if isinstance(t, datetime):
-            datetime_str_format = "%Y-%m-%d %H:%M:%S"
-            return t.strftime(datetime_str_format)
-        elif isinstance(t, timedelta):
-            hours = t.seconds // 3600
-            hour_str = f"{hours}{unit_sep}hr" if hours > 0 else ""
-            minutes = (t.seconds // 60) % 60
-            minute_str = f"{minutes:>2}{unit_sep}min" if minutes > 0 else ""
-            seconds = t.seconds % 60
-            milliseconds = t.microseconds // 1000
-            precised_seconds = seconds + milliseconds / 1000
-            second_str = (
-                f"{precised_seconds:>.1f}{unit_sep}s" if precised_seconds >= 0 else ""
-            )
-            time_str = " ".join([hour_str, minute_str, second_str]).strip()
-            return time_str
-        else:
-            return str(t)
-
-
-"""OS environment utils"""
-
-
-class OSEnver:
-    def __init__(self, secrets_json=None):
-        if not secrets_json:
-            self.secrets_json = Path(__file__).parent / "secrets.json"
-        else:
-            self.secrets_json = secrets_json
-        self.load_secrets()
-
-    def load_secrets(self):
-        self.secrets = CaseInsensitiveDict()
-        try:
-            with open(self.secrets_json, mode="r", encoding="utf-8") as rf:
-                secrets = json.load(rf)
-                for key, value in secrets.items():
-                    self.secrets[key] = value
-        except Exception as e:
-            logger.warn(f"Loading local secrets: {e}")
-
-    def __getitem__(self, key=None):
-        if key:
-            return self.secrets.get(key, os.getenv(key, None))
-        else:
-            return dict(self.secrets.items())
