@@ -5,15 +5,25 @@ Python terminal colored logger
 
 ## Install
 ```sh
-pip install tclogger
+pip install tclogger --upgrade
 ```
 
 ## Usage
-```py
-from tclogger import logger, int_bits, Runtimer
-with Runtimer():
-    logger.note("hello world")
-    logger.mesg(int_bits(1234567890))
 
-shell_cmd("ls -l")
+See: [example.py](./example.py)
+
+```python
+import tclogger
+from tclogger import TCLogger, logger
+from tclogger import (
+    get_now_ts,
+    get_now_str,
+    ts_to_str,
+    str_to_ts,
+    get_now_ts_str,
+    Runtimer,
+)
+from tclogger import OSEnver, shell_cmd
+
+...
 ```
