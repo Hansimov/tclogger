@@ -202,3 +202,41 @@ class TCLogger(logging.Logger):
 
 
 logger = TCLogger()
+
+
+class TCLogstr:
+    def __init__(self):
+        self.COLORS = {k: v[1] for k, v in TCLogger.LOG_METHODS.items()}
+
+    def colored_str(self, msg, level, *args, **kwargs):
+        return colored(msg, color=self.COLORS[level.lower()], *args, **kwargs)
+
+    def err(self, msg: str = ""):
+        return self.colored_str(msg, "err")
+
+    def warn(self, msg: str = ""):
+        return self.colored_str(msg, "warn")
+
+    def note(self, msg: str = ""):
+        return self.colored_str(msg, "note")
+
+    def mesg(self, msg: str = ""):
+        return self.colored_str(msg, "mesg")
+
+    def file(self, msg: str = ""):
+        return self.colored_str(msg, "file")
+
+    def line(self, msg: str = ""):
+        return self.colored_str(msg, "line")
+
+    def success(self, msg: str = ""):
+        return self.colored_str(msg, "success")
+
+    def fail(self, msg: str = ""):
+        return self.colored_str(msg, "fail")
+
+    def back(self, msg: str = ""):
+        return self.colored_str(msg, "back")
+
+
+logstr = TCLogstr()
