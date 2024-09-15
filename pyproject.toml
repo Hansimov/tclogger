@@ -1,6 +1,6 @@
 [project]
 name = "tclogger"
-version = "1.0.2"
+version = "1.0.3"
 authors = [
     { name="Hansimov" },
 ]
@@ -12,7 +12,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-dependencies = [ "requests", "termcolor" ]
+dependencies = [ "requests" ]
 
 [project.urls]
 Homepage = "https://github.com/Hansimov/tclogger"

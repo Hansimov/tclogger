@@ -6,8 +6,8 @@ import subprocess
 
 from pathlib import Path
 from requests.structures import CaseInsensitiveDict
-from termcolor import colored
 
+from .colors import colored
 from .logs import logger
 
 

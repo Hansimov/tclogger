@@ -15,7 +15,6 @@ from tclogger import (
     dict_to_str,
 )
 from tclogger import OSEnver, shell_cmd
-from rich.console import Console
 
 if __name__ == "__main__":
     with Runtimer():

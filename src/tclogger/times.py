@@ -1,8 +1,8 @@
 """Time utils"""
 
 from datetime import datetime, timedelta
-from termcolor import colored
 
+from .colors import colored
 from .logs import logger, add_fillers
 
 
