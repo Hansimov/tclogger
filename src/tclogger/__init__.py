@@ -1,3 +1,4 @@
+from .colors import colored
 from .logs import TCLogger, logger, TCLogstr, logstr
 from .times import (
     get_now_ts,

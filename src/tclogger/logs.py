@@ -3,10 +3,9 @@
 import functools
 import inspect
 import logging
-
 import shutil
 
-from termcolor import colored
+from .colors import colored
 
 
 def add_fillers(text, filler="=", fill_side="both"):
