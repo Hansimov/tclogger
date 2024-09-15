@@ -48,6 +48,47 @@ LOG_METHODS = {
 }
 
 
+class TCLogstr:
+    def __init__(self):
+        self.COLORS = {k: v[1] for k, v in LOG_METHODS.items()}
+
+    def colored_str(self, msg, method, *args, **kwargs):
+        return colored(msg, color=self.COLORS[method.lower()], *args, **kwargs)
+
+    def err(self, msg: str = ""):
+        return self.colored_str(msg, "err")
+
+    def warn(self, msg: str = ""):
+        return self.colored_str(msg, "warn")
+
+    def hint(self, msg: str = ""):
+        return self.colored_str(msg, "hint")
+
+    def note(self, msg: str = ""):
+        return self.colored_str(msg, "note")
+
+    def mesg(self, msg: str = ""):
+        return self.colored_str(msg, "mesg")
+
+    def file(self, msg: str = ""):
+        return self.colored_str(msg, "file")
+
+    def line(self, msg: str = ""):
+        return self.colored_str(msg, "line")
+
+    def success(self, msg: str = ""):
+        return self.colored_str(msg, "success")
+
+    def fail(self, msg: str = ""):
+        return self.colored_str(msg, "fail")
+
+    def back(self, msg: str = ""):
+        return self.colored_str(msg, "back")
+
+
+logstr = TCLogstr()
+
+
 class TCLogger(logging.Logger):
     INDENT_METHODS = [
         "indent",
@@ -140,8 +181,7 @@ class TCLogger(logging.Logger):
 
     def log(
         self,
-        level,
-        color,
+        method,
         msg,
         indent=0,
         fill=False,
@@ -167,85 +207,45 @@ class TCLogger(logging.Logger):
         handler = self.handlers[0]
         handler.terminator = end
 
-        getattr(self, level)(colored(indented_msg, color), *args, **kwargs)
+        level, color = LOG_METHODS[method]
+        getattr(self, level)(logstr.colored_str(indented_msg, method), *args, **kwargs)
 
     def route_log(self, method, msg, *args, **kwargs):
-        level, method = method
+        level, color = LOG_METHODS[method]
         # if level is lower (less important) than self.log_level, do not log
         if self.LEVEL_NAMES[level] < self.LEVEL_NAMES[self.log_level]:
             return
-        functools.partial(self.log, level, method, msg)(*args, **kwargs)
+        functools.partial(self.log, method, msg)(*args, **kwargs)
 
     def err(self, msg: str = "", *args, **kwargs):
-        self.route_log(("error", "red"), msg, *args, **kwargs)
+        self.route_log("err", msg, *args, **kwargs)
 
     def warn(self, msg: str = "", *args, **kwargs):
-        self.route_log(("warning", "light_red"), msg, *args, **kwargs)
+        self.route_log("warn", msg, *args, **kwargs)
 
     def hint(self, msg: str = "", *args, **kwargs):
-        self.route_log(("info", "light_yellow"), msg, *args, **kwargs)
+        self.route_log("hint", msg, *args, **kwargs)
 
     def note(self, msg: str = "", *args, **kwargs):
-        self.route_log(("info", "light_magenta"), msg, *args, **kwargs)
+        self.route_log("note", msg, *args, **kwargs)
 
     def mesg(self, msg: str = "", *args, **kwargs):
-        self.route_log(("info", "light_cyan"), msg, *args, **kwargs)
+        self.route_log("mesg", msg, *args, **kwargs)
 
     def file(self, msg: str = "", *args, **kwargs):
-        self.route_log(("info", "light_blue"), msg, *args, **kwargs)
+        self.route_log("file", msg, *args, **kwargs)
 
     def line(self, msg: str = "", *args, **kwargs):
-        self.route_log(("info", "white"), msg, *args, **kwargs)
+        self.route_log("line", msg, *args, **kwargs)
 
     def success(self, msg: str = "", *args, **kwargs):
-        self.route_log(("info", "light_green"), msg, *args, **kwargs)
+        self.route_log("success", msg, *args, **kwargs)
 
     def fail(self, msg: str = "", *args, **kwargs):
-        self.route_log(("info", "light_red"), msg, *args, **kwargs)
+        self.route_log("fail", msg, *args, **kwargs)
 
     def back(self, msg: str = "", *args, **kwargs):
-        self.route_log(("debug", "light_cyan"), msg, *args, **kwargs)
+        self.route_log("back", msg, *args, **kwargs)
 
 
 logger = TCLogger()
-
-
-class TCLogstr:
-    def __init__(self):
-        self.COLORS = {k: v[1] for k, v in LOG_METHODS.items()}
-
-    def colored_str(self, msg, level, *args, **kwargs):
-        return colored(msg, color=self.COLORS[level.lower()], *args, **kwargs)
-
-    def err(self, msg: str = ""):
-        return self.colored_str(msg, "err")
-
-    def warn(self, msg: str = ""):
-        return self.colored_str(msg, "warn")
-
-    def hint(self, msg: str = ""):
-        return self.colored_str(msg, "hint")
-
-    def note(self, msg: str = ""):
-        return self.colored_str(msg, "note")
-
-    def mesg(self, msg: str = ""):
-        return self.colored_str(msg, "mesg")
-
-    def file(self, msg: str = ""):
-        return self.colored_str(msg, "file")
-
-    def line(self, msg: str = ""):
-        return self.colored_str(msg, "line")
-
-    def success(self, msg: str = ""):
-        return self.colored_str(msg, "success")
-
-    def fail(self, msg: str = ""):
-        return self.colored_str(msg, "fail")
-
-    def back(self, msg: str = ""):
-        return self.colored_str(msg, "back")
-
-
-logstr = TCLogstr()
