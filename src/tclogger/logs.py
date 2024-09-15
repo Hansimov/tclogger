@@ -34,18 +34,21 @@ def add_fillers(text, filler="=", fill_side="both"):
     return filled_str
 
 
+LOG_METHODS = {
+    "err": ("error", "red"),
+    "warn": ("warning", "light_red"),
+    "hint": ("info", "light_yellow"),
+    "note": ("info", "light_magenta"),
+    "mesg": ("info", "light_cyan"),
+    "file": ("info", "light_blue"),
+    "line": ("info", "white"),
+    "success": ("info", "light_green"),
+    "fail": ("info", "light_red"),
+    "back": ("debug", "light_cyan"),
+}
+
+
 class TCLogger(logging.Logger):
-    LOG_METHODS = {
-        "err": ("error", "red"),
-        "warn": ("warning", "light_red"),
-        "note": ("info", "light_magenta"),
-        "mesg": ("info", "light_cyan"),
-        "file": ("info", "light_blue"),
-        "line": ("info", "white"),
-        "success": ("info", "light_green"),
-        "fail": ("info", "light_red"),
-        "back": ("debug", "light_cyan"),
-    }
     INDENT_METHODS = [
         "indent",
         "set_indent",
@@ -179,6 +182,9 @@ class TCLogger(logging.Logger):
     def warn(self, msg: str = "", *args, **kwargs):
         self.route_log(("warning", "light_red"), msg, *args, **kwargs)
 
+    def hint(self, msg: str = "", *args, **kwargs):
+        self.route_log(("info", "light_yellow"), msg, *args, **kwargs)
+
     def note(self, msg: str = "", *args, **kwargs):
         self.route_log(("info", "light_magenta"), msg, *args, **kwargs)
 
@@ -206,7 +212,7 @@ logger = TCLogger()
 
 class TCLogstr:
     def __init__(self):
-        self.COLORS = {k: v[1] for k, v in TCLogger.LOG_METHODS.items()}
+        self.COLORS = {k: v[1] for k, v in LOG_METHODS.items()}
 
     def colored_str(self, msg, level, *args, **kwargs):
         return colored(msg, color=self.COLORS[level.lower()], *args, **kwargs)
@@ -216,6 +222,9 @@ class TCLogstr:
 
     def warn(self, msg: str = ""):
         return self.colored_str(msg, "warn")
+
+    def hint(self, msg: str = ""):
+        return self.colored_str(msg, "hint")
 
     def note(self, msg: str = ""):
         return self.colored_str(msg, "note")
