@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 import tclogger
-from tclogger import TCLogger, logger, TCLogstr, logstr
+from tclogger import TCLogger, logger, TCLogstr, logstr, colored
 from tclogger import (
     get_now_ts,
     get_now_str,
@@ -23,6 +23,14 @@ if __name__ == "__main__":
         logger.success(get_now_str())
         logger.note(f"Now: {logstr.mesg(get_now_str())}, ({logstr.file(get_now_ts())})")
 
+    s1 = colored("hello", color="green", bg_color="bg_red", fonts=["bold", "blink"])
+    s2 = colored(
+        "world", color="yellow", bg_color="bg_blue", fonts=["bold", "concealed"]
+    )
+    s3 = colored(f"BEG {s1} __ {s2} END")
+    logger.success(s3)
+    logger.mesg(s3)
+
     d = {
         "hello": "world",
         "now": get_now_str(),
@@ -30,6 +38,6 @@ if __name__ == "__main__":
         "nested": {"key1": "value1", "key2": "value2", "key_3": {"subkey": "subvalue"}},
     }
     s = dict_to_str(d, max_depth=1)
-    print(s)
+    logger.success(s)
 
     # python example.py
