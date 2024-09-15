@@ -9,3 +9,4 @@ from .times import (
 )
 from .envs import OSEnver, shell_cmd
 from .maths import int_bits
+from .formats import dict_to_str
