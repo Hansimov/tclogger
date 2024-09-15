@@ -1,6 +1,6 @@
-"""Inspired by termcolor:
-https://github.com/termcolor/termcolor
-"""
+""" Inspired by termcolor: https://github.com/termcolor/termcolor """
+
+import re
 
 from typing import Literal, Iterable, Union
 
@@ -105,16 +105,29 @@ COLORS: dict[COLOR_TYPE, int] = {
 
 COLOR_SET = "\033[%sm%s"
 COLOR_RESET = "\033[0m"
+RE_COLORED = (
+    r"(?P<colored_text>\033\[(?P<color_ints>\d+(\;\d+)*)m(?P<text>[^\033]*)\033\[0m)"
+)
+
+
+def color_text_with_ints(text: str, color_ints: list[int]) -> str:
+    if color_ints:
+        color_ints_str = ";".join(map(str, color_ints))
+        res = f"\033[{color_ints_str}m{text}\033[0m"
+    else:
+        res = text
+    return res
 
 
 def colored(
-    text,
+    text: str,
     color: COLOR_TYPE = None,
     bg_color: BG_COLOR_TYPE = None,
     fonts: Union[FONT_TYPE, Iterable[FONT_TYPE]] = None,
 ) -> str:
-    color_ints = []
+    text = str(text)
 
+    color_ints = []
     if color:
         color_ints.append(COLORS[color])
     if bg_color:
@@ -124,16 +137,22 @@ def colored(
             color_ints.append(FONTS[fonts])
         else:
             color_ints.extend([FONTS[font] for font in fonts])
-    color_str = ";".join(map(str, color_ints)) + ""
 
-    res = f"{COLOR_SET % (color_str, text)}{COLOR_RESET}"
+    # handle nested colored text
+    matches = re.finditer(RE_COLORED, text)
+    if matches:
+        res = ""
+        prev_end = 0
+        for match in matches:
+            start = match.start()
+            end = match.end()
+            if start > prev_end:
+                res += color_text_with_ints(text[prev_end:start], color_ints)
+            res += match.group("colored_text")
+            prev_end = end
+        if prev_end < len(text):
+            res += color_text_with_ints(text[prev_end:], color_ints)
+    else:
+        res = color_text_with_ints(text, color_ints)
+
     return res
-
-
-if __name__ == "__main__":
-    s1 = colored("hello", color="green", bg_color="bg_red", fonts=["bold"])
-    print(s1, "\n", repr(s1))
-    s2 = colored("Real" + s1 + "World", color="blue")
-    print(s2, "\n", repr(s2))
-
-    # python -m tclogger.colors
