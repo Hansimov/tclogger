@@ -12,8 +12,8 @@ from tclogger import (
     str_to_ts,
     get_now_ts_str,
     Runtimer,
-    dict_to_str,
 )
+from tclogger import DictStringifier, dict_to_str
 from tclogger import OSEnver, shell_cmd
 
 if __name__ == "__main__":
