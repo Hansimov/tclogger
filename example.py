@@ -24,12 +24,10 @@ if __name__ == "__main__":
         logger.note(f"Now: {logstr.mesg(get_now_str())}, ({logstr.file(get_now_ts())})")
 
     s1 = colored("hello", color="green", bg_color="bg_red", fonts=["bold", "blink"])
-    s2 = colored(
-        "world", color="yellow", bg_color="bg_blue", fonts=["bold", "concealed"]
-    )
+    s2 = colored("world", color="red", bg_color="bg_blue", fonts=["bold", "underline"])
     s3 = colored(f"BEG {s1} __ {s2} END")
+    logger.note(s3)
     logger.success(s3)
-    logger.mesg(s3)
 
     d = {
         "hello": "world",
