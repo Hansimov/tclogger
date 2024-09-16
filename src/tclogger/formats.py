@@ -85,13 +85,16 @@ class DictStringifier:
 
         lines = []
         if isinstance(d, dict):
-            key_len = max_key_len(d)
+            if self.add_quotes:
+                key_len = max_key_len(d, 2)
+            else:
+                key_len = max_key_len(d)
             for idx, (key, value) in enumerate(d.items()):
                 key_str = f"{key}"
                 if self.add_quotes:
                     key_str = f'"{key_str}"'
                 if self.align_colon:
-                    key_str = key_str.ljust(key_len + 2)
+                    key_str = key_str.ljust(key_len)
                 value_str, value_str_type = self.dict_to_str(
                     value, depth=depth + 1 if isinstance(value, dict) else depth
                 )
