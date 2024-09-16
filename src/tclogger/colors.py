@@ -156,3 +156,23 @@ def colored(
         res = color_text_with_ints(text, color_ints)
 
     return res
+
+
+def decolored(text: str) -> str:
+    matches = re.finditer(RE_COLORED, text)
+    if matches:
+        res = ""
+        prev_end = 0
+        for match in matches:
+            start = match.start()
+            end = match.end()
+            if start > prev_end:
+                res += text[prev_end:start]
+            res += match.group("text")
+            prev_end = end
+        if prev_end < len(text):
+            res += text[prev_end:]
+    else:
+        res = text
+
+    return res
