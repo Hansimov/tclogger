@@ -14,6 +14,7 @@ class DictStringifier:
         max_depth: int = None,
         align_colon: bool = True,
         add_quotes: bool = True,
+        is_colored: bool = True,
         brace_colors: list[str] = ["light_blue", "light_cyan", "light_magenta"],
         key_colors: list[str] = ["light_blue", "light_cyan", "light_magenta"],
         value_colors: list[str] = ["white"],
@@ -22,6 +23,7 @@ class DictStringifier:
         self.max_depth = max_depth
         self.align_colon = align_colon
         self.add_quotes = add_quotes
+        self.is_colored = is_colored
         self.depth_configs = {}
         self.brace_colors = brace_colors
         self.key_colors = key_colors
@@ -46,10 +48,18 @@ class DictStringifier:
 
         indent_str = " " * self.indent * (depth + 1)
         brace_indent_str = " " * self.indent * depth
-        lb = colored("{", brace_color)
-        rb = colored("}", brace_color)
-        colon = colored(":", brace_color)
-        comma = colored(",", brace_color)
+        if self.is_colored:
+            lb = colored("{", brace_color)
+            rb = colored("}", brace_color)
+            colon = colored(":", brace_color)
+            comma = colored(",", brace_color)
+            ellipsis = colored("...", value_color)
+        else:
+            lb = "{"
+            rb = "}"
+            colon = ":"
+            comma = ","
+            ellipsis = "..."
 
         self.depth_configs[depth] = {
             "key_color": key_color,
@@ -61,6 +71,7 @@ class DictStringifier:
             "rb": rb,
             "colon": colon,
             "comma": comma,
+            "ellipsis": ellipsis,
         }
 
         return self.depth_configs[depth]
@@ -69,7 +80,7 @@ class DictStringifier:
         self,
         d: Union[dict, list],
         depth: int = 0,
-    ) -> Union[str, tuple[str, str]]:
+    ) -> tuple[str, str]:
         configs = self.get_depth_config(depth)
         key_color = configs["key_color"]
         value_color = configs["value_color"]
@@ -79,9 +90,10 @@ class DictStringifier:
         rb = configs["rb"]
         colon = configs["colon"]
         comma = configs["comma"]
+        ellipsis = configs["ellipsis"]
 
         if self.max_depth is not None and depth > self.max_depth:
-            return f"{lb}{colored('...',value_color)}{rb}", "dict"
+            return f"{lb}{ellipsis}{rb}", "dict"
 
         lines = []
         if isinstance(d, dict):
@@ -101,9 +113,12 @@ class DictStringifier:
                 if self.add_quotes:
                     if isinstance(value_str, str) and value_str_type == "str":
                         value_str = f'"{value_str}"'
-                colored_key_str = colored(key_str, key_color)
-                colored_value_str = colored(value_str, value_color)
-                line = f"{indent_str}{colored_key_str} {colon} {colored_value_str}"
+                if self.is_colored:
+                    colored_key_str = colored(key_str, key_color)
+                    colored_value_str = colored(value_str, value_color)
+                    line = f"{indent_str}{colored_key_str} {colon} {colored_value_str}"
+                else:
+                    line = f"{indent_str}{key_str} {colon} {value_str}"
                 if idx < len(d) - 1:
                     line += comma
                 lines.append(line)
@@ -117,10 +132,7 @@ class DictStringifier:
             dict_str = d
             str_type = "str"
 
-        if depth == 0 and str_type == "dict":
-            return dict_str
-        else:
-            return dict_str, str_type
+        return dict_str, str_type
 
 
 def dict_to_str(
@@ -129,6 +141,7 @@ def dict_to_str(
     max_depth: int = None,
     align_colon: bool = True,
     add_quotes: bool = False,
+    is_colored: bool = True,
     brace_colors: list[str] = ["light_blue", "light_cyan", "light_magenta"],
     key_colors: list[str] = ["light_blue", "light_cyan", "light_magenta"],
     value_colors: list[str] = ["white"],
@@ -138,8 +151,9 @@ def dict_to_str(
         max_depth=max_depth,
         align_colon=align_colon,
         add_quotes=add_quotes,
+        is_colored=is_colored,
         brace_colors=brace_colors,
         key_colors=key_colors,
         value_colors=value_colors,
     )
-    return ds.dict_to_str(d)
+    return ds.dict_to_str(d)[0]
