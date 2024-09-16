@@ -13,6 +13,7 @@ class DictStringifier:
         indent: int = 2,
         max_depth: int = None,
         align_colon: bool = True,
+        add_quotes: bool = True,
         brace_colors: list[str] = ["light_blue", "light_cyan", "light_magenta"],
         key_colors: list[str] = ["light_blue", "light_cyan", "light_magenta"],
         value_colors: list[str] = ["white"],
@@ -20,6 +21,7 @@ class DictStringifier:
         self.indent = indent
         self.max_depth = max_depth
         self.align_colon = align_colon
+        self.add_quotes = add_quotes
         self.depth_configs = {}
         self.brace_colors = brace_colors
         self.key_colors = key_colors
@@ -67,7 +69,7 @@ class DictStringifier:
         self,
         d: Union[dict, list],
         depth: int = 0,
-    ) -> str:
+    ) -> Union[str, tuple[str, str]]:
         configs = self.get_depth_config(depth)
         key_color = configs["key_color"]
         value_color = configs["value_color"]
@@ -79,19 +81,23 @@ class DictStringifier:
         comma = configs["comma"]
 
         if self.max_depth is not None and depth > self.max_depth:
-            return f"{lb}{colored('...',value_color)}{rb}"
+            return f"{lb}{colored('...',value_color)}{rb}", "dict"
 
         lines = []
         if isinstance(d, dict):
             key_len = max_key_len(d)
             for idx, (key, value) in enumerate(d.items()):
                 key_str = f"{key}"
+                if self.add_quotes:
+                    key_str = f'"{key_str}"'
                 if self.align_colon:
-                    key_str = key_str.ljust(key_len)
-                value_str = self.dict_to_str(
-                    value,
-                    depth=depth + 1 if isinstance(value, dict) else depth,
+                    key_str = key_str.ljust(key_len + 2)
+                value_str, value_str_type = self.dict_to_str(
+                    value, depth=depth + 1 if isinstance(value, dict) else depth
                 )
+                if self.add_quotes:
+                    if isinstance(value_str, str) and value_str_type == "str":
+                        value_str = f'"{value_str}"'
                 colored_key_str = colored(key_str, key_color)
                 colored_value_str = colored(value_str, value_color)
                 line = f"{indent_str}{colored_key_str} {colon} {colored_value_str}"
@@ -100,12 +106,18 @@ class DictStringifier:
                 lines.append(line)
             lines_str = "\n".join(lines)
             dict_str = f"{lb}\n{lines_str}\n{brace_indent_str}{rb}"
+            str_type = "dict"
         elif isinstance(d, list):
-            dict_str = [self.dict_to_str(v, depth=depth) for v in d]
+            dict_str = [self.dict_to_str(v, depth=depth)[0] for v in d]
+            str_type = "list"
         else:
             dict_str = d
+            str_type = "str"
 
-        return dict_str
+        if depth == 0 and str_type == "dict":
+            return dict_str
+        else:
+            return dict_str, str_type
 
 
 def dict_to_str(
@@ -113,6 +125,7 @@ def dict_to_str(
     indent: int = 2,
     max_depth: int = None,
     align_colon: bool = True,
+    add_quotes: bool = False,
     brace_colors: list[str] = ["light_blue", "light_cyan", "light_magenta"],
     key_colors: list[str] = ["light_blue", "light_cyan", "light_magenta"],
     value_colors: list[str] = ["white"],
@@ -121,6 +134,7 @@ def dict_to_str(
         indent=indent,
         max_depth=max_depth,
         align_colon=align_colon,
+        add_quotes=add_quotes,
         brace_colors=brace_colors,
         key_colors=key_colors,
         value_colors=value_colors,
