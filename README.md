@@ -53,4 +53,6 @@ if __name__ == "__main__":
     }
     s = dict_to_str(d, add_quotes=True, max_depth=1)
     logger.success(s)
+    s = dict_to_str(d, add_quotes=False, is_colored=False, max_depth=0)
+    print(s)
 ```
