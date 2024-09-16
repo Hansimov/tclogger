@@ -4,17 +4,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 import tclogger
-from tclogger import TCLogger, logger, TCLogstr, logstr, colored
-from tclogger import (
-    get_now_ts,
-    get_now_str,
-    ts_to_str,
-    str_to_ts,
-    get_now_ts_str,
-    Runtimer,
-)
+from tclogger import TCLogger, logger, TCLogstr, logstr, colored, decolored
+from tclogger import Runtimer, OSEnver, shell_cmd
+from tclogger import get_now_ts, get_now_str, ts_to_str, str_to_ts, get_now_ts_str
 from tclogger import DictStringifier, dict_to_str
-from tclogger import OSEnver, shell_cmd
 
 if __name__ == "__main__":
     with Runtimer():
@@ -28,6 +21,8 @@ if __name__ == "__main__":
     s3 = colored(f"BEG {s1} __ {s2} END")
     logger.note(s3)
     logger.success(s3)
+    s4 = decolored(logstr.success(s3))
+    print(s4)
 
     d = {
         "hello": "world",

@@ -1,13 +1,7 @@
-from .colors import colored
+from .colors import colored, decolored
 from .logs import TCLogger, logger, TCLogstr, logstr
-from .times import (
-    get_now_ts,
-    get_now_str,
-    ts_to_str,
-    str_to_ts,
-    get_now_ts_str,
-    Runtimer,
-)
+from .times import get_now_ts, get_now_str, get_now_ts_str, ts_to_str, str_to_ts
+from .times import Runtimer
 from .envs import OSEnver, shell_cmd
-from .maths import int_bits
+from .maths import int_bits, max_key_len
 from .formats import DictStringifier, dict_to_str
