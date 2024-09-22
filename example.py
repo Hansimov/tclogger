@@ -8,6 +8,7 @@ from tclogger import TCLogger, logger, TCLogstr, logstr, colored, decolored
 from tclogger import Runtimer, OSEnver, shell_cmd
 from tclogger import get_now_ts, get_now_str, ts_to_str, str_to_ts, get_now_ts_str
 from tclogger import DictStringifier, dict_to_str
+from tclogger import FileLogger
 
 if __name__ == "__main__":
     with Runtimer():
@@ -34,5 +35,8 @@ if __name__ == "__main__":
     logger.success(s)
     s = dict_to_str(d, add_quotes=False, is_colored=False, max_depth=0)
     print(s)
+
+    file_logger = FileLogger(Path(__file__).parent / "test.log")
+    file_logger.log("This is an error message", "error")
 
     # python example.py
