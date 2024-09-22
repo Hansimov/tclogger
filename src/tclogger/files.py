@@ -9,12 +9,12 @@ MSG_PREFIXES = {"note": ">", "error": "×", "success": "✓"}
 
 
 class FileLogger:
-    def __init__(self, log_file: Union[str, Path], lock: threading.Lock = None):
-        if not isinstance(log_file, Path):
-            log_file = Path(log_file)
-        self.log_file = log_file
-        if not self.log_file.parent.exists():
-            self.log_file.parent.mkdir(parents=True, exist_ok=True)
+    def __init__(self, log_path: Union[str, Path], lock: threading.Lock = None):
+        if not isinstance(log_path, Path):
+            log_path = Path(log_path)
+        self.log_path = log_path
+        if not self.log_path.parent.exists():
+            self.log_path.parent.mkdir(parents=True, exist_ok=True)
         self.lock = lock or threading.Lock()
 
     def log(
@@ -29,5 +29,5 @@ class FileLogger:
         else:
             line = f"{prefix} {msg}\n"
         with self.lock:
-            with open(self.log_file, "a") as f:
+            with open(self.log_path, "a") as f:
                 f.write(line)
