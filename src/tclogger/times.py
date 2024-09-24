@@ -1,9 +1,14 @@
 """Time utils"""
 
 from datetime import datetime, timedelta
+from typing import Literal
 
 from .colors import colored
 from .logs import logger, add_fillers
+
+
+def get_now() -> datetime:
+    return datetime.now()
 
 
 def get_now_ts() -> int:
@@ -20,6 +25,50 @@ def ts_to_str(ts: int) -> str:
 
 def str_to_ts(s: str) -> int:
     return int(datetime.fromisoformat(s).timestamp())
+
+
+def t_to_str(t: datetime) -> str:
+    return t.strftime("%Y-%m-%d %H:%M:%S")
+
+
+def t_to_ts(t: datetime) -> int:
+    return int(t.timestamp())
+
+
+def dt_to_sec(dt: timedelta, precision: int = 0) -> float:
+    if precision is not None and precision > 0:
+        return int(dt.total_seconds())
+    else:
+        return round(dt.total_seconds, ndigits=precision)
+
+
+def dt_to_str(
+    dt: timedelta,
+    precision: int = 0,
+    str_format: Literal["unit", "colon"] = "colon",
+) -> str:
+    hours = dt.seconds // 3600
+    minutes = (dt.seconds // 60) % 60
+    seconds = dt.seconds % 60
+    microseconds = dt.microseconds / 1000000
+    precised_seconds = seconds + microseconds
+
+    if str_format == "unit":
+        hours_str = f"{hours}hr" if hours > 0 else ""
+        minutes_str = f"{minutes}min" if minutes > 0 else ""
+        if precision is not None and precision > 0:
+            seconds_str = f"{precised_seconds:.{precision}f}s"
+        else:
+            seconds_str = f"{seconds}s"
+
+        time_str = " ".join([hours_str, minutes_str, seconds_str]).strip()
+    else:
+        hours_str = f"{hours:02d}" if hours > 0 else ""
+        minutes_str = f"{minutes:02d}"
+        seconds_str = f"{seconds:02d}"
+        time_str = ":".join([hours_str, minutes_str, seconds_str]).strip(":")
+
+    return time_str
 
 
 def get_now_ts_str() -> tuple[int, str]:
