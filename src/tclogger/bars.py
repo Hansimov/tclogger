@@ -193,7 +193,7 @@ class TCLogbar:
             count_str = "?"
 
         if self.iter_per_second is not None:
-            if self.iter_per_second > 1:
+            if self.iter_per_second > 1 or self.iter_per_second == 0:
                 iter_per_second_str = f"({round(self.iter_per_second)} it/s)"
             else:
                 iter_per_second_str = f"({round(1/self.iter_per_second)} s/it)"
