@@ -31,7 +31,7 @@ import random
 from tclogger import TCLogger, logger, TCLogstr, logstr, colored, decolored
 from tclogger import Runtimer, OSEnver, shell_cmd
 from tclogger import get_now_ts, get_now_str, ts_to_str, str_to_ts, get_now_ts_str
-from tclogger import DictStringifier, dict_to_str
+from tclogger import CaseInsensitiveDict, DictStringifier, dict_to_str
 from tclogger import FileLogger
 from tclogger import TCLogbar
 
@@ -52,6 +52,16 @@ def test_color():
     logger.success(s3)
     s4 = decolored(logstr.success(s3))
     print(s4)
+
+
+def test_case_insensitive_dict():
+    d = CaseInsensitiveDict()
+    d["Hello"] = "old world"
+    print(d["hello"])
+    print(d)
+    d["hELLo"] = "New WORLD"
+    print(d["HEllO"])
+    print(d)
 
 
 def test_dict_to_str():
@@ -87,6 +97,7 @@ def test_logbar():
 if __name__ == "__main__":
     test_run_timer_and_logger()
     test_color()
+    test_case_insensitive_dict()
     test_dict_to_str()
     test_file_logger()
     test_logbar()
