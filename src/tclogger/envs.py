@@ -5,10 +5,10 @@ import os
 import subprocess
 
 from pathlib import Path
-from requests.structures import CaseInsensitiveDict
 
 from .colors import colored
 from .logs import logger
+from .structures import CaseInsensitiveDict
 
 
 class OSEnver:
