@@ -73,11 +73,16 @@ def test_file_logger():
 
 
 def test_logbar():
-    total = 100
-    logbar = TCLogbar(total=total)
-    for i in range(total):
-        logbar.update(add_count=1)
-        time.sleep(random.random() / 10)
+    epochs = 3
+    total = 1000
+    logbar = TCLogbar(total=total, grid_mode="symbol")
+    for epoch in range(epochs):
+        for i in range(total):
+            logbar.update(increment=1)
+            logbar.set_head(f"[{epoch+1}/{epochs}]")
+            time.sleep(random.random() / 100)
+        logbar.reset()
+
 
 
 if __name__ == "__main__":
