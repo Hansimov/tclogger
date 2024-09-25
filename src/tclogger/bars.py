@@ -29,7 +29,7 @@ class TCLogbar:
         show_datetime: bool = True,
         show_iter_per_second: bool = True,
         show_color: bool = True,
-        flush_interval: float = None,
+        flush_interval: float = 0.1,
         grid_symbols: str = " ▏▎▍▌▋▊▉█",
         grid_shades: str = "▒▓█",
         grid_mode: Literal["symbol", "shade"] = "symbol",
@@ -75,35 +75,16 @@ class TCLogbar:
         count: int = None,
         head: str = None,
         desc: str = None,
-        update_bar: bool = True,
+        flush: bool = False,
     ):
+        self.now = get_now()
+
         if count is not None:
             self.count = count
         elif increment is not None:
             self.count += increment
         else:
             pass
-
-        if head is not None:
-            self.head = head
-
-        if desc is not None:
-            self.desc = desc
-
-        self.now = get_now()
-        self.dt = self.now - self.start_t
-        dt_seconds = dt_to_sec(self.dt, precision=3)
-        if (
-            self.is_num(self.total)
-            and self.is_num(self.count)
-            and self.count > 0
-            and self.total - self.count >= 0
-        ):
-            self.remain_dt = timedelta(
-                seconds=dt_seconds * (self.total - self.count) / self.count
-            )
-        else:
-            self.remain_dt = None
 
         if self.is_num(self.total) and self.is_num(self.count) and self.total > 0:
             self.percent_float = self.count / self.total * 100
@@ -112,12 +93,9 @@ class TCLogbar:
             self.percent_float = None
             self.percent = None
 
-        if self.is_num(self.count) and self.count > 0 and dt_seconds > 0:
-            self.iter_per_second = round(self.count / dt_seconds, ndigits=1)
-        else:
-            self.iter_per_second = None
-
-        if self.percent_float >= 100 or self.percent_float <= 0:
+        if flush is True:
+            pass
+        elif self.percent_float >= 100 or self.percent_float <= 0:
             flush = True
         elif self.flush_interval is not None:
             flush_dt = self.now - self.flush_t
@@ -128,9 +106,33 @@ class TCLogbar:
                 flush = True
                 self.flush_t = self.now
         else:
-            flush = True
+            pass
 
-        if update_bar and flush:
+        if flush is True:
+            if head is not None:
+                self.head = head
+            if desc is not None:
+                self.desc = desc
+
+            self.dt = self.now - self.start_t
+            dt_seconds = dt_to_sec(self.dt, precision=3)
+            if (
+                self.is_num(self.total)
+                and self.is_num(self.count)
+                and self.count > 0
+                and self.total - self.count >= 0
+            ):
+                self.remain_dt = timedelta(
+                    seconds=dt_seconds * (self.total - self.count) / self.count
+                )
+            else:
+                self.remain_dt = None
+
+            if self.is_num(self.count) and self.count > 0 and dt_seconds > 0:
+                self.iter_per_second = round(self.count / dt_seconds, ndigits=1)
+            else:
+                self.iter_per_second = None
+
             self.flush()
 
     def construct_grid_str(self):
