@@ -5,9 +5,18 @@ from typing import Union
 
 from .times import get_now, t_to_str, dt_to_str, dt_to_sec
 from .maths import int_bits
+from .logs import logstr
 
 
 class TCLogbar:
+    PROGRESS_LOGSTR = {
+        0: logstr.file,
+        25: logstr.note,
+        50: logstr.hint,
+        75: logstr.err,
+        100: logstr.success,
+    }
+
     def __init__(
         self,
         count: int = 0,
@@ -17,6 +26,7 @@ class TCLogbar:
         show_at_init: bool = True,
         show_datetime: bool = True,
         show_iter_per_second: bool = True,
+        show_color: bool = True,
     ):
         self.count = count
         self.total = total
@@ -25,6 +35,7 @@ class TCLogbar:
         self.show_at_init = show_at_init
         self.show_datetime = show_datetime
         self.show_iter_per_second = show_iter_per_second
+        self.show_color = show_color
         self.start_t = get_now()
 
     def is_num(self, num: Union[int, float]):
@@ -92,20 +103,37 @@ class TCLogbar:
         elapsed_str = dt_to_str(self.dt)
 
         if self.percent is not None:
-            percent_str = f"({self.percent:>3}%)"
+            percent_str = f"{self.percent:>3}%"
+            filled_cols = int(self.cols * self.percent / 100)
+            grid_percent_str = f" {self.percent}%"
+            if filled_cols + len(grid_percent_str) < self.cols:
+                grid_str = (
+                    filled_cols * "█"
+                    + grid_percent_str
+                    + (self.cols - filled_cols - len(grid_percent_str)) * " "
+                )
+            else:
+                grid_str = filled_cols * "█" + (self.cols - filled_cols) * " "
         else:
-            percent_str = f"({'?':>3}%)"
+            percent_str = f"{'?':>3}%"
+            grid_str = self.cols * " "
 
         if self.remain_dt is not None:
             remain_str = dt_to_str(self.remain_dt)
         else:
             remain_str = "??:??"
 
-        grid_str = " " * self.cols
-        if self.total is not None:
+        if self.is_num(self.total):
+            total_bits = int_bits(self.total)
             total_str = str(self.total)
         else:
+            total_bits = 0
             total_str = "?"
+
+        if self.is_num(self.count):
+            count_str = f"{self.count:_>{total_bits}}"
+        else:
+            count_str = "?"
 
         if self.iter_per_second is not None:
             if self.iter_per_second > 1:
@@ -115,16 +143,22 @@ class TCLogbar:
         else:
             iter_per_second_str = ""
 
-        if self.is_num(self.total):
-            total_bits = int_bits(self.total)
-        else:
-            total_bits = 0
+        if self.show_color:
+            logstr_progress = self.PROGRESS_LOGSTR[self.percent // 25 * 25]
+            count_str = logstr_progress(count_str)
+            total_str = logstr.line(total_str)
+            now_str = logstr.mesg(now_str)
+            percent_str = logstr_progress(percent_str)
+            grid_str = logstr_progress(grid_str)
+            elapsed_str = logstr.file(elapsed_str)
+            remain_str = logstr_progress(remain_str)
+            iter_per_second_str = logstr.file(iter_per_second_str)
 
         self.bar_str = (
             f"[{now_str}] {self.desc}: "
-            f"{self.count:_>{total_bits}}/{total_str} "
-            f"{percent_str} "
-            f"|{grid_str}| "
+            f"{count_str}/{total_str} "
+            f"({percent_str}) "
+            f"▌{grid_str}▐ "
             f"[{elapsed_str}<{remain_str}] "
             f"{iter_per_second_str}"
         )
