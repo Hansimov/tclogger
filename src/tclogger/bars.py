@@ -22,6 +22,7 @@ class TCLogbar:
         self,
         count: int = 0,
         total: int = None,
+        head: str = "",
         desc: str = "",
         cols: int = 35,
         show_at_init: bool = True,
@@ -30,10 +31,11 @@ class TCLogbar:
         show_color: bool = True,
         grid_symbols: str = " ▏▎▍▌▋▊▉█",
         grid_shades: str = "▒▓█",
-        grid_mode: Literal["shade", "symbol"] = "symbol",
+        grid_mode: Literal["symbol", "shade"] = "symbol",
     ):
         self.count = count
         self.total = total
+        self.head = head
         self.desc = desc
         self.cols = cols
         self.show_at_init = show_at_init
@@ -43,6 +45,7 @@ class TCLogbar:
         self.grid_symbols = grid_symbols
         self.grid_shades = grid_shades
         self.grid_mode = grid_mode
+        self.init_t = get_now()
         self.start_t = get_now()
 
     def is_num(self, num: Union[int, float]):
@@ -61,17 +64,21 @@ class TCLogbar:
 
     def update(
         self,
-        add_count: int = None,
+        increment: int = None,
         count: int = None,
+        head: str = None,
         desc: str = None,
         update_bar: bool = True,
     ):
         if count is not None:
             self.count = count
-        elif add_count is not None:
-            self.count += add_count
+        elif increment is not None:
+            self.count += increment
         else:
             pass
+
+        if head is not None:
+            self.head = head
 
         if desc is not None:
             self.desc = desc
@@ -172,6 +179,11 @@ class TCLogbar:
         else:
             iter_per_second_str = ""
 
+        if self.head:
+            head_str = f"{self.head} "
+        else:
+            head_str = ""
+
         if self.desc:
             desc_str = f" {self.desc}"
         else:
@@ -189,6 +201,7 @@ class TCLogbar:
             iter_per_second_str = logstr.mesg(iter_per_second_str)
 
         self.bar_str = (
+            f"{head_str}"
             f"[{now_str}]{desc_str}: "
             f"{percent_str} "
             f"▌{grid_str}▐ "
@@ -196,6 +209,13 @@ class TCLogbar:
             f"[{elapsed_str}<{remain_str}] "
             f"{iter_per_second_str}"
         )
+
+    def reset(self, linebreak: bool = True):
+        if linebreak:
+            sys.stdout.write("\n")
+            sys.stdout.flush()
+        self.count = 0
+        self.start_t = get_now()
 
     def set_cols(self, cols: int = None):
         self.cols = cols
@@ -206,11 +226,14 @@ class TCLogbar:
     def set_count(self, count: int = None):
         self.count = count
 
-    def add_count(self, add_count: int = None):
-        self.count += add_count
+    def increment(self, increment: int = None):
+        self.count += increment
 
     def set_desc(self, desc: str = None):
         self.desc = desc
+
+    def set_head(self, head: str = None):
+        self.head = head
 
     def hide(self):
         pass
