@@ -37,9 +37,9 @@ def t_to_ts(t: datetime) -> int:
 
 def dt_to_sec(dt: timedelta, precision: int = 0) -> float:
     if precision is not None and precision > 0:
-        return int(dt.total_seconds())
+        return round(dt.total_seconds(), ndigits=precision)
     else:
-        return round(dt.total_seconds, ndigits=precision)
+        return int(dt.total_seconds())
 
 
 def dt_to_str(

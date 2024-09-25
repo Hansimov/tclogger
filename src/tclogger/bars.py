@@ -99,8 +99,10 @@ class TCLogbar:
             self.remain_dt = None
 
         if self.is_num(self.total) and self.is_num(self.count) and self.total > 0:
-            self.percent = min(round(self.count / self.total * 100), 100)
+            self.percent_float = self.count / self.total * 100
+            self.percent = min(int(self.percent_float), 100)
         else:
+            self.percent_float = None
             self.percent = None
 
         if self.is_num(self.count) and self.count > 0 and dt_seconds > 0:
