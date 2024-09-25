@@ -29,6 +29,7 @@ class TCLogbar:
         show_datetime: bool = True,
         show_iter_per_second: bool = True,
         show_color: bool = True,
+        flush_interval: float = None,
         grid_symbols: str = " ▏▎▍▌▋▊▉█",
         grid_shades: str = "▒▓█",
         grid_mode: Literal["symbol", "shade"] = "symbol",
@@ -42,11 +43,13 @@ class TCLogbar:
         self.show_datetime = show_datetime
         self.show_iter_per_second = show_iter_per_second
         self.show_color = show_color
+        self.flush_interval = flush_interval
         self.grid_symbols = grid_symbols
         self.grid_shades = grid_shades
         self.grid_mode = grid_mode
         self.init_t = get_now()
-        self.start_t = get_now()
+        self.start_t = self.init_t
+        self.flush_t = self.init_t
 
     def is_num(self, num: Union[int, float]):
         return isinstance(num, (int, float))
@@ -57,6 +60,10 @@ class TCLogbar:
         line = f"\033[2K\033[1G{msg}"
         sys.stdout.write(line)
         sys.stdout.flush()
+
+    def flush(self):
+        self.construct_bar_str()
+        self.log(self.bar_str)
 
     def end(self):
         sys.stdout.write("\n")
@@ -110,9 +117,21 @@ class TCLogbar:
         else:
             self.iter_per_second = None
 
-        if update_bar:
-            self.construct_bar_str()
-            self.log(self.bar_str)
+        if self.percent_float >= 100 or self.percent_float <= 0:
+            flush = True
+        elif self.flush_interval is not None:
+            flush_dt = self.now - self.flush_t
+            flush_seconds = flush_dt.seconds + flush_dt.microseconds / 1000000
+            if flush_seconds < self.flush_interval:
+                flush = False
+            else:
+                flush = True
+                self.flush_t = self.now
+        else:
+            flush = True
+
+        if update_bar and flush:
+            self.flush()
 
     def construct_grid_str(self):
         if self.grid_mode == "shade":
