@@ -32,9 +32,12 @@ class TCLogbar:
     def log(self, msg: str = None):
         if msg is None:
             return
+        line = f"\033[2K\033[1G{msg}"
+        sys.stdout.write(line)
+        sys.stdout.flush()
 
-        msg_str = str(msg) + "\r"
-        sys.stdout.write(msg_str)
+    def end(self):
+        sys.stdout.write("\n")
         sys.stdout.flush()
 
     def update(
@@ -61,7 +64,7 @@ class TCLogbar:
             self.is_num(self.total)
             and self.is_num(self.count)
             and self.count > 0
-            and self.total - self.count > 0
+            and self.total - self.count >= 0
         ):
             self.remain_dt = timedelta(
                 seconds=dt_seconds * (self.total - self.count) / self.count
