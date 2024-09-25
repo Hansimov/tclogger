@@ -25,8 +25,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 import tclogger
-import time
-import random
 
 from tclogger import TCLogger, logger, TCLogstr, logstr, colored, decolored
 from tclogger import Runtimer, OSEnver, shell_cmd
@@ -85,12 +83,11 @@ def test_file_logger():
 def test_logbar():
     epochs = 3
     total = 1000000
-    logbar = TCLogbar(total=total, flush_interval=0.5, grid_mode="symbol")
+    logbar = TCLogbar(total=total, flush_interval=0.1, grid_mode="symbol")
     for epoch in range(epochs):
         for i in range(total):
             logbar.update(increment=1)
             logbar.set_head(f"[{epoch+1}/{epochs}]")
-            # time.sleep(0.1 / total)
         logbar.reset()
 
 
