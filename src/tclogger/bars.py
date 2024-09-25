@@ -4,6 +4,7 @@ from datetime import timedelta
 from typing import Union
 
 from .times import get_now, t_to_str, dt_to_str, dt_to_sec
+from .maths import int_bits
 
 
 class TCLogbar:
@@ -72,6 +73,11 @@ class TCLogbar:
         else:
             self.remain_dt = None
 
+        if self.is_num(self.total) and self.is_num(self.count) and self.total > 0:
+            self.percent = min(round(self.count / self.total * 100), 100)
+        else:
+            self.percent = None
+
         if self.is_num(self.count) and self.count > 0 and dt_seconds > 0:
             self.iter_per_second = round(self.count / dt_seconds, ndigits=1)
         else:
@@ -84,10 +90,17 @@ class TCLogbar:
     def construct_bar_str(self):
         now_str = t_to_str(self.now)
         elapsed_str = dt_to_str(self.dt)
+
+        if self.percent is not None:
+            percent_str = f"({self.percent:>3}%)"
+        else:
+            percent_str = f"({'?':>3}%)"
+
         if self.remain_dt is not None:
             remain_str = dt_to_str(self.remain_dt)
         else:
-            remain_str = "?"
+            remain_str = "??:??"
+
         grid_str = " " * self.cols
         if self.total is not None:
             total_str = str(self.total)
@@ -102,7 +115,19 @@ class TCLogbar:
         else:
             iter_per_second_str = ""
 
-        self.bar_str = f"[{now_str}] {self.desc}: |{grid_str}| {self.count}/{total_str} [{elapsed_str}<{remain_str}] {iter_per_second_str}"
+        if self.is_num(self.total):
+            total_bits = int_bits(self.total)
+        else:
+            total_bits = 0
+
+        self.bar_str = (
+            f"[{now_str}] {self.desc}: "
+            f"{self.count:_>{total_bits}}/{total_str} "
+            f"{percent_str} "
+            f"|{grid_str}| "
+            f"[{elapsed_str}<{remain_str}] "
+            f"{iter_per_second_str}"
+        )
 
     def set_cols(self, cols: int = None):
         self.cols = cols
