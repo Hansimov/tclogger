@@ -169,6 +169,8 @@ class TCLogbar:
     def construct_bar_str(self):
         if self.show_datetime:
             now_str = f"[{t_to_str(self.now)}]"
+            if self.head:
+                now_str = f" {now_str}"
         else:
             now_str = ""
 
@@ -212,7 +214,9 @@ class TCLogbar:
             head_str = ""
 
         if self.desc:
-            desc_str = f" {self.desc}"
+            desc_str = f"{self.desc}"
+            if self.head or self.show_datetime:
+                desc_str = f" {desc_str}"
         else:
             desc_str = ""
 
@@ -228,7 +232,7 @@ class TCLogbar:
             iter_per_second_str = logstr.mesg(iter_per_second_str)
 
         self.bar_str = (
-            f"{head_str} "
+            f"{head_str}"
             f"{now_str}{desc_str}: "
             f"{percent_str} "
             f"▌{grid_str}▐ "
