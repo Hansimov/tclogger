@@ -167,7 +167,11 @@ class TCLogbar:
         return grid_str
 
     def construct_bar_str(self):
-        now_str = t_to_str(self.now)
+        if self.show_datetime:
+            now_str = f"[{t_to_str(self.now)}]"
+        else:
+            now_str = ""
+
         elapsed_str = dt_to_str(self.dt)
 
         if self.percent is not None:
@@ -203,7 +207,7 @@ class TCLogbar:
             iter_per_second_str = ""
 
         if self.head:
-            head_str = f"{self.head} "
+            head_str = f"{self.head}"
         else:
             head_str = ""
 
@@ -224,8 +228,8 @@ class TCLogbar:
             iter_per_second_str = logstr.mesg(iter_per_second_str)
 
         self.bar_str = (
-            f"{head_str}"
-            f"[{now_str}]{desc_str}: "
+            f"{head_str} "
+            f"{now_str}{desc_str}: "
             f"{percent_str} "
             f"▌{grid_str}▐ "
             f"{count_str}/{total_str} "

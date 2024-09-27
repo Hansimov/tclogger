@@ -62,7 +62,9 @@ def test_file_logger():
 def test_logbar():
     epochs = 3
     total = 1000000
-    logbar = TCLogbar(total=total, flush_interval=0.1, grid_mode="symbol")
+    logbar = TCLogbar(
+        total=total, show_datetime=True, flush_interval=0.1, grid_mode="symbol"
+    )
     for epoch in range(epochs):
         for i in range(total):
             logbar.update(increment=1)
