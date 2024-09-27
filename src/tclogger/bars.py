@@ -1,4 +1,4 @@
-import math
+import os
 import sys
 
 from datetime import timedelta
@@ -7,6 +7,7 @@ from typing import Union, Literal
 from .times import get_now, t_to_str, dt_to_str, dt_to_sec
 from .maths import int_bits
 from .logs import logstr
+from .colors import decolored
 
 
 class TCLogbar:
@@ -25,13 +26,15 @@ class TCLogbar:
         head: str = "",
         desc: str = "",
         cols: int = 35,
+        min_cols: int = None,
+        auto_cols: bool = True,
         show_at_init: bool = True,
         show_datetime: bool = True,
         show_iter_per_second: bool = True,
         show_color: bool = True,
         flush_interval: float = 0.1,
         grid_symbols: str = " ▏▎▍▌▋▊▉█",
-        grid_shades: str = "▒▓█",
+        grid_shades: str = "░▒▓█",
         grid_mode: Literal["symbol", "shade"] = "symbol",
     ):
         self.count = count
@@ -39,6 +42,8 @@ class TCLogbar:
         self.head = head
         self.desc = desc
         self.cols = cols
+        self.auto_cols = auto_cols
+        self.line_up_num = 0
         self.show_at_init = show_at_init
         self.show_datetime = show_datetime
         self.show_iter_per_second = show_iter_per_second
@@ -57,9 +62,17 @@ class TCLogbar:
     def log(self, msg: str = None):
         if msg is None:
             return
-        line = f"\033[2K\033[1G{msg}"
+
+        line_up_str = self.line_up_num * "\033[A"
+        line = f"{line_up_str}\033[2K\033[1G{msg}"
         sys.stdout.write(line)
         sys.stdout.flush()
+
+        terminal_width = os.get_terminal_size().columns
+        if len(decolored(msg)) > terminal_width:
+            self.line_up_num = len(decolored(msg)) // terminal_width
+        else:
+            self.line_up_num = 0
 
     def flush(self):
         self.construct_bar_str()
@@ -245,6 +258,7 @@ class TCLogbar:
         if linebreak:
             sys.stdout.write("\n")
             sys.stdout.flush()
+            self.line_up_num = 0
         self.count = 0
         self.start_t = get_now()
 
