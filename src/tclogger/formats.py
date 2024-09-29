@@ -3,7 +3,6 @@
 from typing import Union
 
 from .colors import colored, decolored
-from .logs import logstr
 from .maths import max_key_len
 
 
@@ -16,13 +15,23 @@ class DictListAligner:
             return "bool"
         elif isinstance(v[0], (int, float)):
             return "num"
-        else:
+        elif isinstance(v[0], str):
             return "str"
+        else:
+            return str(type(v[0]))
+
+    def is_all_items_types_valid(self, lst: list) -> bool:
+        for v in lst:
+            if not isinstance(v, (bool, int, float, str)):
+                return False
+        return True
 
     def extract_same_len_lists(self, d: dict) -> dict[int, dict]:
         dict_lists_by_len: dict[int, dict] = {}
         for k, v in d.items():
             if isinstance(v, list):
+                if not self.is_all_items_types_valid(v):
+                    continue
                 v_len = len(v)
                 item_type = self.get_item_type(v)
                 ak = (v_len, item_type)
@@ -38,6 +47,8 @@ class DictListAligner:
         aligned_widths_by_len: dict[tuple, list] = {}
         for k, v in d.items():
             if isinstance(v, list):
+                if not self.is_all_items_types_valid(v):
+                    continue
                 list_len = len(v)
                 item_type = self.get_item_type(v)
                 ak = (list_len, item_type)
