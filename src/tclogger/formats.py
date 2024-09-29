@@ -8,6 +8,9 @@ from .maths import max_key_len
 
 
 class DictListAligner:
+    def __init__(self):
+        self.list_item_types = {}
+
     def get_item_type(self, v: list) -> Union[str, bool, Union[int, float]]:
         if isinstance(v[0], bool):
             return "bool"
@@ -23,6 +26,7 @@ class DictListAligner:
                 v_len = len(v)
                 item_type = self.get_item_type(v)
                 ak = (v_len, item_type)
+                self.list_item_types[k] = item_type
                 if ak not in dict_lists_by_len:
                     dict_lists_by_len[ak] = {}
                 dict_lists_by_len[ak][k] = v
@@ -32,20 +36,20 @@ class DictListAligner:
         self, d: dict
     ) -> dict[tuple[int, Union[str, bool, Union[int, float]]], list]:
         aligned_widths_by_len: dict[tuple, list] = {}
-        for k, v_list in d.items():
-            if isinstance(v_list, list):
-                list_len = len(v_list)
-                item_type = self.get_item_type(v_list)
+        for k, v in d.items():
+            if isinstance(v, list):
+                list_len = len(v)
+                item_type = self.get_item_type(v)
                 ak = (list_len, item_type)
                 if ak not in aligned_widths_by_len:
                     aligned_widths_by_len[ak] = [0] * list_len
-                for i, v in enumerate(v_list):
-                    if isinstance(v, str):
-                        v_len = len(decolored(v))
+                for i, vv in enumerate(v):
+                    if isinstance(vv, str):
+                        vv_width = len(decolored(vv))
                     else:
-                        v_len = len(str(v))
+                        vv_width = len(str(vv))
                     aligned_widths_by_len[ak][i] = max(
-                        aligned_widths_by_len[ak][i], v_len
+                        aligned_widths_by_len[ak][i], vv_width
                     )
         return aligned_widths_by_len
 
@@ -155,7 +159,8 @@ class DictStringifier:
         lines = []
         if isinstance(d, dict):
             if self.align_list:
-                self.dict_list_aligner.align_lists_in_dict(d)
+                aligner = DictListAligner()
+                aligner.align_lists_in_dict(d)
             if self.add_quotes:
                 key_len = max_key_len(d, 2)
             else:
@@ -178,6 +183,10 @@ class DictStringifier:
                     line = f"{indent_str}{colored_key_str} {colon} {colored_value_str}"
                 else:
                     line = f"{indent_str}{key_str} {colon} {value_str}"
+                if self.align_list:
+                    if key in aligner.list_item_types:
+                        if aligner.list_item_types[key] != "str":
+                            line = line.replace("'", "")
                 if idx < len(d) - 1:
                     line += comma
                 lines.append(line)
