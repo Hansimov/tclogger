@@ -74,11 +74,35 @@ def test_logbar():
         logbar.reset()
 
 
+def test_align_dict_list():
+    data = {
+        "_id": None,
+        "view_avg": 15175,
+        "view_maxn": [94092954, 86624275, 68368263, 57713196, 53493614],
+        "view_percentile": [39, 152, 254, 539, 3032, 13602, 51956, 282149, 94092954],
+        "coin_avg": 57,
+        "coin_maxn": [3093375, 2021980, 1420923, 1354206, 1312931],
+        "coin_percentile": [0, 0, 0, 1, 6, 24, 76, 682, 3093375],
+        "danmaku_avg": 26,
+        "danmaku_maxn": [762005, 365521, 349354, 335414, 334935],
+        "danmaku_percentile": [0, 0, 0, 0, 2, 12, 57, 353, 762005],
+        "percentiles": [0.2, 0.4, 0.5, 0.6, 0.8, 0.9, 0.95, 0.99, 1.0],
+        "sub_lists": {
+            "sub1": [1, 2, 4, 5, 6],
+            "sub2": [21, 2, 35, 43, 89],
+            "sub3": ["a", "abc", "gh", "jkl", "qerq"],
+            "sub4": ["x", "ef", "i", "mkns", "adfa"],
+        },
+    }
+    print(dict_to_str(data, align_list=True))
+
+
 if __name__ == "__main__":
     test_run_timer_and_logger()
     test_color()
     test_case_insensitive_dict()
     test_dict_to_str()
+    test_align_dict_list()
     test_file_logger()
     test_logbar()
 
