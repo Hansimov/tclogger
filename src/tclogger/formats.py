@@ -1,5 +1,6 @@
 """Format utils"""
 
+from copy import deepcopy
 from typing import Union
 
 from .colors import colored, decolored
@@ -237,4 +238,4 @@ def dict_to_str(
         key_colors=key_colors,
         value_colors=value_colors,
     )
-    return ds.dict_to_str(d)[0]
+    return ds.dict_to_str(deepcopy(d))[0]
