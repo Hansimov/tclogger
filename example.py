@@ -103,10 +103,10 @@ def test_logbar_group():
     total = 1000000
     epoch_bar = TCLogbar(total=epochs, show_datetime=False)
     epoch_bar.set_desc(f"[0/{epochs}]")
-    epoch_bar.update(0, flush=True)
-
     progress_bar = TCLogbar(total=total, show_datetime=False)
     TCLogbarGroup([epoch_bar, progress_bar])
+    print("This is a noise line to test lazy blank prints of logbar group.")
+    epoch_bar.update(0)
     for epoch in range(epochs):
         for i in range(total):
             progress_bar.set_desc(f"[{i+1}/{total}]")

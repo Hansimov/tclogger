@@ -307,15 +307,19 @@ class TCLogbarGroup:
         for idx, bar in enumerate(self.bars):
             bar.group = self
             bar.node_idx = idx
-        self.log_node_idx = 0
+        self.log_node_idx = None
         self.total_line_height = 0
         for bar in self.bars:
             self.total_line_height += bar.line_height
-        print("\n" * (self.total_line_height - 1))
-        self.cursor.move(row=self.total_line_height)
-        self.cursor.move_to_beg()
 
     def move_cursor(self, node_idx: int):
+        # prepare blank area for logbars
+        if self.log_node_idx is None:
+            sys.stdout.write(self.total_line_height * "\n")
+            self.cursor.move(row=self.total_line_height)
+            self.cursor.move_to_beg()
+            self.log_node_idx = 0
+
         if node_idx > self.log_node_idx:
             down_rows = 1  # from last line end to next line beg
             for node in self.bars[self.log_node_idx + 1 : node_idx]:
