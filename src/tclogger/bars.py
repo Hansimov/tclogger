@@ -287,3 +287,41 @@ class TCLogbar:
 
     def show(self):
         pass
+
+
+class TCLogbarGroup:
+    def __init__(self, bars: list[TCLogbar]):
+        self.bars = bars
+        self.cursor = CursorController()
+        self.init_bars()
+
+    def init_bars(self):
+        for idx, bar in enumerate(self.bars):
+            bar.group = self
+            bar.node_idx = idx
+        self.log_node_idx = 0
+        self.total_line_height = 0
+        for bar in self.bars:
+            self.total_line_height += bar.line_height
+        print("\n" * (self.total_line_height - 1))
+        self.cursor.move(row=self.total_line_height)
+        self.cursor.move_to_beg()
+
+    def move_cursor(self, node_idx: int):
+        if node_idx > self.log_node_idx:
+            down_rows = 1  # from last line end to next line beg
+            for node in self.bars[self.log_node_idx + 1 : node_idx]:
+                down_rows += node.line_height
+            self.cursor.move(row=-down_rows)
+        elif node_idx < self.log_node_idx:
+            up_rows = 0
+            for node in self.bars[node_idx : self.log_node_idx + 1]:
+                up_rows += node.line_height
+            self.cursor.move(row=up_rows)
+        else:
+            up_rows = self.bars[node_idx].line_height - 1
+            self.cursor.move(row=up_rows)
+
+        self.cursor.erase_line()
+        self.cursor.move_to_beg()
+        self.log_node_idx = node_idx
