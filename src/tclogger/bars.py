@@ -1,6 +1,7 @@
 import math
 import os
 import sys
+import threading
 
 from datetime import timedelta
 from typing import Union, Literal
@@ -302,6 +303,7 @@ class TCLogbarGroup:
     def __init__(self, bars: list[TCLogbar]):
         self.bars = bars
         self.cursor = CursorController()
+        self.lock = threading.Lock()
         self.init_bars()
 
     def init_bars(self):
@@ -313,10 +315,16 @@ class TCLogbarGroup:
         for bar in self.bars:
             self.total_line_height += bar.line_height
 
+    def write(self, msg: str, flush: bool = True):
+        with self.lock:
+            sys.stdout.write(msg)
+            if flush:
+                sys.stdout.flush()
+
     def move_cursor(self, node_idx: int):
         # prepare blank area for logbars
         if self.log_node_idx is None:
-            sys.stdout.write(self.total_line_height * "\n")
+            self.write(self.total_line_height * "\n")
             self.cursor.move(row=self.total_line_height)
             self.cursor.move_to_beg()
             self.log_node_idx = 0
@@ -330,6 +338,7 @@ class TCLogbarGroup:
             up_rows = 0
             for node in self.bars[node_idx : self.log_node_idx + 1]:
                 up_rows += node.line_height
+            up_rows -= 1  # as previous cursor already at last line end of previous node
             self.cursor.move(row=up_rows)
         else:
             up_rows = self.bars[node_idx].line_height - 1
