@@ -1,5 +1,7 @@
 import sys
 
+from typing import Literal
+
 
 class CursorController:
     """ANSI Escape Sequences
@@ -57,7 +59,7 @@ class CursorController:
     def move_to_col(self, col: int = 0, write: bool = True):
         """Move cursor to column of current line."""
         if col > 0:
-            move_str = f"\033[{col}G"
+            move_str = f"\033[{col}G"  # move cursor to column of current line
         else:
             move_str = ""
 
@@ -78,11 +80,11 @@ class CursorController:
         - beg_to_end: erase entire line
         """
         if part == "cursor_to_end":
-            erase_str = "\033[0K"
+            erase_str = "\033[0K"  # erase from cursor to the end of the line
         elif part == "beg_to_cursor":
-            erase_str = "\033[1K"
+            erase_str = "\033[1K"  # erase from the beginning of the line to the cursor
         elif part == "beg_to_end":
-            erase_str = "\033[2K"
+            erase_str = "\033[2K"  # erase entire line
         else:
             erase_str = ""
 

@@ -45,7 +45,7 @@ class TCLogbar:
         self.cols = cols
         self.auto_cols = auto_cols
         self.cursor = CursorController()
-        self.row_up = 0
+        self.line_height = 1
         self.show_at_init = show_at_init
         self.show_datetime = show_datetime
         self.show_iter_per_second = show_iter_per_second
@@ -64,7 +64,7 @@ class TCLogbar:
     def log(self, msg: str = None):
         if msg is None:
             return
-        self.cursor.move(row=self.row_up)
+        self.cursor.move(row=self.line_height - 1)
         self.cursor.erase_line()
         self.cursor.move_to_beg()
         sys.stdout.write(msg)
@@ -72,9 +72,9 @@ class TCLogbar:
 
         terminal_width = os.get_terminal_size().columns
         if len(decolored(msg)) > terminal_width:
-            self.row_up = len(decolored(msg)) // terminal_width
+            self.line_height = len(decolored(msg)) // terminal_width + 1
         else:
-            self.row_up = 0
+            self.line_height = 1
 
     def flush(self):
         self.construct_bar_str()
