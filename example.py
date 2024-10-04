@@ -4,13 +4,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 import tclogger
+import time
 
 from tclogger import TCLogger, logger, TCLogstr, logstr, colored, decolored
 from tclogger import Runtimer, OSEnver, shell_cmd
 from tclogger import get_now_ts, get_now_str, ts_to_str, str_to_ts, get_now_ts_str
 from tclogger import CaseInsensitiveDict, DictStringifier, dict_to_str
 from tclogger import FileLogger
-from tclogger import TCLogbar
+from tclogger import TCLogbar, TCLogbarGroup
 
 
 def test_run_timer_and_logger():
@@ -59,21 +60,6 @@ def test_file_logger():
     file_logger.log("This is an error message", "error")
 
 
-def test_logbar():
-    epochs = 3
-    total = 1000000
-    logbar = TCLogbar(
-        total=total, show_datetime=False, flush_interval=0.1, grid_mode="symbol"
-    )
-    for epoch in range(epochs):
-        for i in range(total):
-            logbar.update(increment=1)
-            logbar.set_head(f"[{epoch+1}/{epochs}]")
-        logbar.grid_mode = "shade"
-        logbar.set_desc("THIS IS A SO LONG DESC WHICH IS USED TO TEST LINE UP")
-        logbar.reset()
-
-
 def test_align_dict_list():
     data = {
         "_id": None,
@@ -97,6 +83,39 @@ def test_align_dict_list():
     print(dict_to_str(data, align_list=True))
 
 
+def test_logbar():
+    epochs = 3
+    total = 1000000
+    logbar = TCLogbar(
+        total=total, show_datetime=False, flush_interval=0.1, grid_mode="symbol"
+    )
+    for epoch in range(epochs):
+        for i in range(total):
+            logbar.update(increment=1)
+            logbar.set_head(f"[{epoch+1}/{epochs}]")
+        logbar.grid_mode = "shade"
+        logbar.set_desc("THIS IS A SO LONG DESC WHICH IS USED TO TEST LINE UP")
+        logbar.reset()
+
+
+def test_logbar_group():
+    epochs = 3
+    total = 1000000
+    epoch_bar = TCLogbar(total=epochs, show_datetime=False)
+    epoch_bar.set_desc(f"[0/{epochs}]")
+    epoch_bar.update(0, flush=True)
+
+    progress_bar = TCLogbar(total=total, show_datetime=False)
+    TCLogbarGroup([epoch_bar, progress_bar])
+    for epoch in range(epochs):
+        for i in range(total):
+            progress_bar.set_desc(f"[{i+1}/{total}]")
+            progress_bar.update(1)
+        progress_bar.reset()
+        epoch_bar.set_desc(f"[{epoch+1}/{epochs}]")
+        epoch_bar.update(1, flush=True)
+
+
 if __name__ == "__main__":
     test_run_timer_and_logger()
     test_color()
@@ -105,5 +124,6 @@ if __name__ == "__main__":
     test_align_dict_list()
     test_file_logger()
     test_logbar()
+    test_logbar_group()
 
     # python example.py
