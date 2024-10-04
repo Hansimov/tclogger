@@ -8,6 +8,7 @@ from .times import get_now, t_to_str, dt_to_str, dt_to_sec
 from .maths import int_bits
 from .logs import logstr
 from .colors import decolored
+from .cursors import CursorController
 
 
 class TCLogbar:
@@ -43,7 +44,8 @@ class TCLogbar:
         self.desc = desc
         self.cols = cols
         self.auto_cols = auto_cols
-        self.line_up_num = 0
+        self.cursor = CursorController()
+        self.row_up = 0
         self.show_at_init = show_at_init
         self.show_datetime = show_datetime
         self.show_iter_per_second = show_iter_per_second
@@ -62,17 +64,17 @@ class TCLogbar:
     def log(self, msg: str = None):
         if msg is None:
             return
-
-        line_up_str = self.line_up_num * "\033[A"
-        line = f"{line_up_str}\033[2K\033[1G{msg}"
-        sys.stdout.write(line)
+        self.cursor.move(row=self.row_up)
+        self.cursor.erase_line()
+        self.cursor.move_to_beg()
+        sys.stdout.write(msg)
         sys.stdout.flush()
 
         terminal_width = os.get_terminal_size().columns
         if len(decolored(msg)) > terminal_width:
-            self.line_up_num = len(decolored(msg)) // terminal_width
+            self.row_up = len(decolored(msg)) // terminal_width
         else:
-            self.line_up_num = 0
+            self.row_up = 0
 
     def flush(self):
         self.construct_bar_str()
