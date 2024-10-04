@@ -1,3 +1,4 @@
+import math
 import os
 import sys
 
@@ -27,7 +28,6 @@ class TCLogbar:
         head: str = "",
         desc: str = "",
         cols: int = 35,
-        min_cols: int = None,
         auto_cols: bool = True,
         show_at_init: bool = True,
         show_datetime: bool = True,
@@ -44,8 +44,6 @@ class TCLogbar:
         self.desc = desc
         self.cols = cols
         self.auto_cols = auto_cols
-        self.cursor = CursorController()
-        self.line_height = 1
         self.show_at_init = show_at_init
         self.show_datetime = show_datetime
         self.show_iter_per_second = show_iter_per_second
@@ -57,22 +55,32 @@ class TCLogbar:
         self.init_t = get_now()
         self.start_t = self.init_t
         self.flush_t = self.init_t
+        self.cursor = CursorController()
+        self.line_height: int = 1
+        self.group: TCLogbarGroup = None
+        self.node_idx: int = None
 
     def is_num(self, num: Union[int, float]):
         return isinstance(num, (int, float))
 
-    def log(self, msg: str = None):
-        if msg is None:
-            return
+    def move_cursor(self):
         self.cursor.move(row=self.line_height - 1)
         self.cursor.erase_line()
         self.cursor.move_to_beg()
+
+    def log(self, msg: str = None):
+        if msg is None:
+            return
+        if self.group is None or self.node_idx is None:
+            self.move_cursor()
+        else:
+            self.group.move_cursor(self.node_idx)
         sys.stdout.write(msg)
         sys.stdout.flush()
 
         terminal_width = os.get_terminal_size().columns
         if len(decolored(msg)) > terminal_width:
-            self.line_height = len(decolored(msg)) // terminal_width + 1
+            self.line_height = math.ceil(len(decolored(msg)) / terminal_width)
         else:
             self.line_height = 1
 
@@ -260,7 +268,7 @@ class TCLogbar:
         if linebreak:
             sys.stdout.write("\n")
             sys.stdout.flush()
-            self.line_up_num = 0
+            self.line_height = 1
         self.count = 0
         self.start_t = get_now()
 
