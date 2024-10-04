@@ -30,7 +30,7 @@ class TCLogbar:
         cols: int = 35,
         auto_cols: bool = True,
         show_at_init: bool = True,
-        show_datetime: bool = True,
+        show_datetime: bool = False,
         show_iter_per_second: bool = True,
         show_color: bool = True,
         flush_interval: float = 0.1,
@@ -68,15 +68,19 @@ class TCLogbar:
         self.cursor.erase_line()
         self.cursor.move_to_beg()
 
+    def write(self, msg: str):
+        sys.stdout.write(msg)
+        sys.stdout.flush()
+
     def log(self, msg: str = None):
         if msg is None:
             return
         if self.group is None or self.node_idx is None:
             self.move_cursor()
+            self.write(msg)
         else:
             self.group.move_cursor(self.node_idx)
-        sys.stdout.write(msg)
-        sys.stdout.flush()
+            self.group.write(msg)
 
         terminal_width = os.get_terminal_size().columns
         if len(decolored(msg)) > terminal_width:
@@ -87,10 +91,6 @@ class TCLogbar:
     def flush(self):
         self.construct_bar_str()
         self.log(self.bar_str)
-
-    def end(self):
-        sys.stdout.write("\n")
-        sys.stdout.flush()
 
     def update(
         self,
@@ -264,11 +264,12 @@ class TCLogbar:
             f"{iter_per_second_str}"
         )
 
-    def reset(self, linebreak: bool = True):
+    def reset(self, linebreak: bool = False):
         if linebreak:
-            sys.stdout.write("\n")
-            sys.stdout.flush()
-            self.line_height = 1
+            if self.group is None or self.node_idx is None:
+                self.write("\n")
+            else:
+                self.group.write("\n")
         self.count = 0
         self.start_t = get_now()
 
