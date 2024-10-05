@@ -47,7 +47,7 @@ def dt_to_str(
     precision: int = 0,
     str_format: Literal["unit", "colon"] = "colon",
 ) -> str:
-    hours = dt.seconds // 3600
+    hours = dt.days * 24 + dt.seconds // 3600
     minutes = (dt.seconds // 60) % 60
     seconds = dt.seconds % 60
     microseconds = dt.microseconds / 1000000
