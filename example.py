@@ -6,9 +6,12 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 import tclogger
 import time
 
+from datetime import timedelta
+
 from tclogger import TCLogger, logger, TCLogstr, logstr, colored, decolored
 from tclogger import Runtimer, OSEnver, shell_cmd
-from tclogger import get_now_ts, get_now_str, ts_to_str, str_to_ts, get_now_ts_str
+from tclogger import get_now_ts, get_now_str, get_now_ts_str
+from tclogger import ts_to_str, str_to_ts, dt_to_str
 from tclogger import CaseInsensitiveDict, DictStringifier, dict_to_str
 from tclogger import FileLogger
 from tclogger import TCLogbar, TCLogbarGroup
@@ -20,6 +23,17 @@ def test_run_timer_and_logger():
         logger.mesg(get_now_ts())
         logger.success(get_now_str())
         logger.note(f"Now: {logstr.mesg(get_now_str())}, ({logstr.file(get_now_ts())})")
+
+
+def test_dt_to_str():
+    dt1 = timedelta(seconds=12)
+    logger.note(f"dt1: {logstr.success(dt_to_str(dt1))}")
+    dt2 = timedelta(seconds=60 * 24 + 12)
+    logger.note(f"dt2: {logstr.success(dt_to_str(dt2))}")
+    dt3 = timedelta(seconds=3600 * 8 + 60 * 24 + 12)
+    logger.note(f"dt3: {logstr.success(dt_to_str(dt3))}")
+    dt4 = timedelta(seconds=3600 * 24 * 1 + 3600 * 8 + 60 * 24 + 12)
+    logger.note(f"dt4: {logstr.success(dt_to_str(dt4))}")
 
 
 def test_color():
@@ -123,6 +137,7 @@ def test_logbar_group():
 
 if __name__ == "__main__":
     test_run_timer_and_logger()
+    test_dt_to_str()
     test_color()
     test_case_insensitive_dict()
     test_dict_to_str()
