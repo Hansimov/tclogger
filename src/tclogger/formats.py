@@ -206,7 +206,18 @@ class DictStringifier:
             dict_str = f"{lb}\n{lines_str}\n{brace_indent_str}{rb}"
             str_type = "dict"
         elif isinstance(d, list):
-            dict_str = [self.dict_to_str(v, depth=depth)[0] for v in d]
+            is_list_contain_dict = any(isinstance(v, dict) for v in d)
+            if is_list_contain_dict:
+                list_strs = []
+                for v in d:
+                    if isinstance(v, (dict, list)):
+                        v_str = self.dict_to_str(v, depth=depth + 1)[0]
+                    else:
+                        v_str = self.dict_to_str(v, depth=depth)[0]
+                    list_strs.append(v_str)
+                dict_str = f"[{', '.join(list_strs)}]"
+            else:
+                dict_str = [self.dict_to_str(v, depth=depth)[0] for v in d]
             str_type = "list"
         else:
             dict_str = d

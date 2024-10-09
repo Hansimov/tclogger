@@ -159,6 +159,8 @@ def colored(
 
 
 def decolored(text: str) -> str:
+    if not isinstance(text, str):
+        return text
     matches = re.finditer(RE_COLORED, text)
     if matches:
         res = ""
