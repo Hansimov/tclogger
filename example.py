@@ -97,6 +97,14 @@ def test_align_dict_list():
     print(dict_to_str(data, align_list=True))
 
 
+def test_list_of_dicts():
+    data = {
+        "list_of_lists": [[1, 2, 3], ["a", "b", "c"]],
+        "list_of_dicts": [{"key1": "dict1"}, {"key2": "dict2", "key3": "dict3"}],
+    }
+    print(dict_to_str(data, align_list=True))
+
+
 def test_logbar():
     epochs = 3
     total = 1000000
@@ -142,6 +150,7 @@ if __name__ == "__main__":
     test_case_insensitive_dict()
     test_dict_to_str()
     test_align_dict_list()
+    test_list_of_dicts()
     test_file_logger()
     test_logbar()
     test_logbar_group()
