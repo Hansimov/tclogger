@@ -12,6 +12,8 @@ class DictListAligner:
         self.list_item_types = {}
 
     def get_item_type(self, v: list) -> Union[str, bool, Union[int, float]]:
+        if not v:
+            return None
         if isinstance(v[0], bool):
             return "bool"
         elif isinstance(v[0], (int, float)):
@@ -124,12 +126,14 @@ class DictStringifier:
         if self.is_colored:
             lb = colored("{", brace_color)
             rb = colored("}", brace_color)
+            lk = colored("[", brace_color)
+            rk = colored("]", brace_color)
             colon = colored(":", brace_color)
             comma = colored(",", brace_color)
             ellipsis = colored("...", value_color)
         else:
-            lb = "{"
-            rb = "}"
+            lb, rb = "{", "}"
+            lk, rk = "[", "]"
             colon = ":"
             comma = ","
             ellipsis = "..."
@@ -142,6 +146,8 @@ class DictStringifier:
             "brace_indent_str": brace_indent_str,
             "lb": lb,
             "rb": rb,
+            "lk": lk,
+            "rk": rk,
             "colon": colon,
             "comma": comma,
             "ellipsis": ellipsis,
@@ -159,8 +165,8 @@ class DictStringifier:
         value_color = configs["value_color"]
         indent_str = configs["indent_str"]
         brace_indent_str = configs["brace_indent_str"]
-        lb = configs["lb"]
-        rb = configs["rb"]
+        lb, rb = configs["lb"], configs["rb"]
+        lk, rk = configs["lk"], configs["rk"]
         colon = configs["colon"]
         comma = configs["comma"]
         ellipsis = configs["ellipsis"]
@@ -202,8 +208,11 @@ class DictStringifier:
                 if idx < len(d) - 1:
                     line += comma
                 lines.append(line)
-            lines_str = "\n".join(lines)
-            dict_str = f"{lb}\n{lines_str}\n{brace_indent_str}{rb}"
+            if lines:
+                lines_str = "\n".join(lines)
+                dict_str = f"{lb}\n{lines_str}\n{brace_indent_str}{rb}"
+            else:
+                dict_str = f"{lb}{rb}"
             str_type = "dict"
         elif isinstance(d, list):
             is_list_contain_dict = any(isinstance(v, dict) for v in d)
@@ -215,7 +224,7 @@ class DictStringifier:
                     else:
                         v_str = self.dict_to_str(v, depth=depth)[0]
                     list_strs.append(v_str)
-                dict_str = f"[{', '.join(list_strs)}]"
+                dict_str = f"{lk}{', '.join(list_strs)}{rk}"
             else:
                 dict_str = [self.dict_to_str(v, depth=depth)[0] for v in d]
             str_type = "list"
