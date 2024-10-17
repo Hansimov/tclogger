@@ -122,6 +122,8 @@ def test_list_of_dicts():
     data = {
         "list_of_lists": [[1, 2, 3], ["a", "b", "c"]],
         "list_of_dicts": [{"key1": "dict1"}, {"key2": "dict2", "key3": "dict3"}],
+        "empty_list": [],
+        "empty_dict": {},
     }
     print(dict_to_str(data, align_list=True))
 
