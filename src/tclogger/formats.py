@@ -190,7 +190,7 @@ class DictStringifier:
                 if self.align_colon:
                     key_str = key_str.ljust(key_len)
                 value_str, value_str_type = self.dict_to_str(
-                    value, depth=depth + 1 if isinstance(value, dict) else depth
+                    value, depth=depth + 1 if isinstance(value, (dict, list)) else depth
                 )
                 if self.add_quotes:
                     if isinstance(value_str, str) and value_str_type == "str":
@@ -219,10 +219,7 @@ class DictStringifier:
             if is_list_contain_dict:
                 list_strs = []
                 for v in d:
-                    if isinstance(v, (dict, list)):
-                        v_str = self.dict_to_str(v, depth=depth + 1)[0]
-                    else:
-                        v_str = self.dict_to_str(v, depth=depth)[0]
+                    v_str = self.dict_to_str(v, depth=depth)[0]
                     list_strs.append(v_str)
                 dict_str = f"{lk}{', '.join(list_strs)}{rk}"
             else:

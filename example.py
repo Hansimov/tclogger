@@ -99,13 +99,16 @@ def test_align_dict_list():
 
 
 def test_list_of_dicts():
-    data = {
+    dict_data = {
         "list_of_lists": [[1, 2, 3], ["a", "b", "c"]],
         "list_of_dicts": [{"key1": "dict1"}, {"key2": "dict2", "key3": "dict3"}],
         "empty_list": [],
         "empty_dict": {},
     }
-    print(dict_to_str(data, align_list=True))
+    print(dict_to_str(dict_data, align_list=True))
+    print()
+    list_data = [{"key1": "val1"}, {"key2": "val2"}, {"key10": "val10"}]
+    print(dict_to_str(list_data, align_list=True))
 
 
 def test_logbar():
