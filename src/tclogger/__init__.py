@@ -9,3 +9,4 @@ from .maths import int_bits, max_key_len
 from .formats import DictStringifier, dict_to_str
 from .files import FileLogger
 from .bars import TCLogbar, TCLogbarGroup
+from .decorations import brk, brc, brp

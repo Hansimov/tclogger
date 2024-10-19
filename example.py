@@ -15,6 +15,7 @@ from tclogger import ts_to_str, str_to_ts, dt_to_str
 from tclogger import CaseInsensitiveDict, DictStringifier, dict_to_str
 from tclogger import FileLogger
 from tclogger import TCLogbar, TCLogbarGroup
+from tclogger import brk, brc, brp
 
 
 def test_run_timer_and_logger():
@@ -145,6 +146,13 @@ def test_logbar_group():
         epoch_bar.update(1, desc=f"[{epoch+1}/{epochs}]", flush=True)
 
 
+def test_decorations():
+    text = "Hello World"
+    logger.note(f"Brackets: {logstr.mesg(brk(text))}")
+    logger.note(f"Braces  : {logstr.mesg(brc(text))}")
+    logger.note(f"Parens  : {logstr.mesg(brp(text))}")
+
+
 if __name__ == "__main__":
     test_run_timer_and_logger()
     test_dt_to_str()
@@ -156,5 +164,6 @@ if __name__ == "__main__":
     test_file_logger()
     test_logbar()
     test_logbar_group()
+    test_decorations()
 
     # python example.py
