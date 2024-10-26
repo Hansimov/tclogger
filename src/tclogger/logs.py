@@ -113,7 +113,7 @@ class TCLogger(logging.Logger):
         "debug": logging.DEBUG,
     }
 
-    def __init__(self, name=None, prefix=False):
+    def __init__(self, name=None, prefix=False, verbose: bool = True):
         if not name:
             frame = inspect.stack()[1]
             module = inspect.getmodule(frame[0])
@@ -121,6 +121,7 @@ class TCLogger(logging.Logger):
 
         super().__init__(name)
         self.setLevel(logging.INFO)
+        self.verbose = verbose
 
         if prefix:
             formatter_prefix = "[%(asctime)s] - [%(name)s] - [%(levelname)s]\n"
@@ -186,6 +187,7 @@ class TCLogger(logging.Logger):
         fill=False,
         fill_side="both",
         end="\n",
+        verbose: bool = None,
         *args,
         **kwargs,
     ):
@@ -207,7 +209,12 @@ class TCLogger(logging.Logger):
         handler.terminator = end
 
         level, color = LOG_METHODS[method]
-        getattr(self, level)(logstr.colored_str(indented_msg, method), *args, **kwargs)
+
+        verbose = self.verbose if verbose is None else verbose
+        if verbose:
+            getattr(self, level)(
+                logstr.colored_str(indented_msg, method), *args, **kwargs
+            )
 
     def route_log(self, method, msg, *args, **kwargs):
         level, color = LOG_METHODS[method]
