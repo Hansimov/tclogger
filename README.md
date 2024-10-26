@@ -39,6 +39,17 @@ from tclogger import TCLogbar, TCLogbarGroup
 from tclogger import brk, brc, brp
 
 
+def test_logger_verbose():
+    logger.note("Hello ", end="")
+    logger.warn("You should not see this message", verbose=False)
+    logger.mesg("World")
+    logger.verbose = False
+    logger.warn("You should not see later messages")
+    logger.verbose = True
+    logger.set_indent(2)
+    logger.success("You should see this message, with indent")
+
+
 def test_run_timer_and_logger():
     with Runtimer():
         logger.note(tclogger.__file__)
@@ -178,6 +189,7 @@ def test_decorations():
 
 
 if __name__ == "__main__":
+    test_logger_verbose()
     test_run_timer_and_logger()
     test_dt_to_str()
     test_color()
