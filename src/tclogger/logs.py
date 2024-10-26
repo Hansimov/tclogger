@@ -191,6 +191,10 @@ class TCLogger(logging.Logger):
         *args,
         **kwargs,
     ):
+        verbose = self.verbose if verbose is None else verbose
+        if not verbose:
+            return
+
         if type(msg) == str:
             msg_str = msg
         else:
@@ -209,12 +213,7 @@ class TCLogger(logging.Logger):
         handler.terminator = end
 
         level, color = LOG_METHODS[method]
-
-        verbose = self.verbose if verbose is None else verbose
-        if verbose:
-            getattr(self, level)(
-                logstr.colored_str(indented_msg, method), *args, **kwargs
-            )
+        getattr(self, level)(logstr.colored_str(indented_msg, method), *args, **kwargs)
 
     def route_log(self, method, msg, *args, **kwargs):
         level, color = LOG_METHODS[method]
