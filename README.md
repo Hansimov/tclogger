@@ -28,10 +28,12 @@ import tclogger
 import time
 
 from datetime import timedelta
+from zoneinfo import ZoneInfo
 
 from tclogger import TCLogger, logger, TCLogstr, logstr, colored, decolored
 from tclogger import Runtimer, OSEnver, shell_cmd
-from tclogger import get_now_ts, get_now_str, get_now_ts_str, set_timezone
+from tclogger import get_now_ts, get_now_str, get_now_ts_str
+from tclogger import TIMEZONE, set_timezone, tcdatetime
 from tclogger import ts_to_str, str_to_ts, dt_to_str
 from tclogger import CaseInsensitiveDict, DictStringifier, dict_to_str
 from tclogger import FileLogger
@@ -59,11 +61,21 @@ def test_run_timer_and_logger():
 
 
 def test_now_and_timezone():
+    logger.success(TIMEZONE)
     logger.success(get_now_str())
+    dt = tcdatetime.fromisoformat("2024-10-31")
+    logger.success(dt)
     set_timezone("Europe/London")
     logger.note(get_now_str())
+    logger.note(tcdatetime.now())
+    dt = tcdatetime.fromisoformat("2024-10-31")
+    logger.note(dt)
+    logger.note(dt.astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"))
     set_timezone("America/New_York")
     logger.warn(get_now_str())
+    dt = tcdatetime.fromisoformat("2024-10-31")
+    logger.warn(dt)
+    logger.warn(dt.astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"))
     set_timezone("Asia/Shanghai")
     logger.success(get_now_str())
 
