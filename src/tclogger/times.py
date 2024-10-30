@@ -1,6 +1,7 @@
 """Time utils"""
 
 from datetime import datetime, timedelta
+from functools import partial
 from typing import Literal
 from zoneinfo import ZoneInfo
 
@@ -13,6 +14,20 @@ TIMEZONE = "Asia/Shanghai"
 def set_timezone(tz: str = "Asia/Shanghai") -> None:
     global TIMEZONE
     TIMEZONE = tz
+
+
+class tcdatetime(datetime):
+    def __new__(cls, *args, **kwargs):
+        return super().__new__(cls, *args, tzinfo=ZoneInfo(TIMEZONE), **kwargs)
+
+    def now():
+        return datetime.now(ZoneInfo(TIMEZONE))
+
+    def fromtimestamp(ts):
+        return datetime.fromtimestamp(ZoneInfo(TIMEZONE))
+
+    def fromisoformat(s):
+        return datetime.fromisoformat(s).replace(tzinfo=ZoneInfo(TIMEZONE))
 
 
 def get_now() -> datetime:
