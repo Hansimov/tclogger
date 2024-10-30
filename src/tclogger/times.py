@@ -18,7 +18,8 @@ def set_timezone(tz: str = "Asia/Shanghai") -> None:
 
 class tcdatetime(datetime):
     def __new__(cls, *args, **kwargs):
-        return super().__new__(cls, *args, tzinfo=ZoneInfo(TIMEZONE), **kwargs)
+        instance = super().__new__(cls, *args, **kwargs)
+        return instance.replace(tzinfo=ZoneInfo(TIMEZONE))
 
     def now():
         return datetime.now(ZoneInfo(TIMEZONE))
