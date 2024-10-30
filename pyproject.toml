@@ -1,6 +1,6 @@
 [project]
 name = "tclogger"
-version = "1.1.11.1"
+version = "1.1.12"
 authors = [
     { name="Hansimov" },
 ]
@@ -17,4 +17,3 @@ dependencies = []
 [project.urls]
 Homepage = "https://github.com/Hansimov/tclogger"
 Issues = "https://github.com/Hansimov/tclogger/issues"
-Changelog = "https://github.com/Hansimov/tclogger/blob/main/CHANGELOG.md"
