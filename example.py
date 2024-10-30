@@ -40,11 +40,12 @@ def test_run_timer_and_logger():
 
 
 def test_now_and_timezone():
+    # Asia/Shanghai
     logger.success(TIMEZONE)
     logger.success(get_now_str())
     dt = tcdatetime.fromisoformat("2024-10-31")
     logger.success(dt)
-
+    # Europe/London
     set_timezone("Europe/London")
     logger.note(get_now_str())
     dt = tcdatetime(year=2024, month=10, day=31)
@@ -54,13 +55,13 @@ def test_now_and_timezone():
     dt = tcdatetime.fromisoformat("2024-10-31")
     logger.note(dt)
     logger.note(dt.strftime("%Y-%m-%d %H:%M:%S"))
-
+    # America/New_York
     set_timezone("America/New_York")
     logger.warn(get_now_str())
     dt = tcdatetime.fromisoformat("2024-10-31")
     logger.warn(dt)
     logger.warn(dt.astimezone(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"))
-
+    # Asia/Shanghai
     set_timezone("Asia/Shanghai")
     logger.success(get_now_str())
 
