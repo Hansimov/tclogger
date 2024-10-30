@@ -2,21 +2,29 @@
 
 from datetime import datetime, timedelta
 from typing import Literal
+from zoneinfo import ZoneInfo
 
 from .colors import colored
 from .logs import logger, add_fillers
 
+TIMEZONE = "Asia/Shanghai"
+
+
+def set_timezone(tz: str = "Asia/Shanghai") -> None:
+    global TIMEZONE
+    TIMEZONE = tz
+
 
 def get_now() -> datetime:
-    return datetime.now()
+    return datetime.now(ZoneInfo(TIMEZONE))
 
 
 def get_now_ts() -> int:
-    return int(datetime.now().timestamp())
+    return int(get_now().timestamp())
 
 
 def get_now_str() -> str:
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return get_now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 def ts_to_str(ts: int) -> str:
@@ -72,7 +80,7 @@ def dt_to_str(
 
 
 def get_now_ts_str() -> tuple[int, str]:
-    now = datetime.now()
+    now = get_now()
     now_ts = int(now.timestamp())
     now_str = now.strftime("%Y-%m-%d %H:%M:%S")
     return now_ts, now_str
@@ -91,12 +99,12 @@ class Runtimer:
         self.elapsed_time()
 
     def start_time(self):
-        self.t1 = datetime.now()
+        self.t1 = get_now()
         self.logger_time("start", self.t1)
         return self.t1
 
     def end_time(self):
-        self.t2 = datetime.now()
+        self.t2 = get_now()
         self.logger_time("end", self.t2)
         return self.t2
 

@@ -10,7 +10,7 @@ from datetime import timedelta
 
 from tclogger import TCLogger, logger, TCLogstr, logstr, colored, decolored
 from tclogger import Runtimer, OSEnver, shell_cmd
-from tclogger import get_now_ts, get_now_str, get_now_ts_str
+from tclogger import get_now_ts, get_now_str, get_now_ts_str, set_timezone
 from tclogger import ts_to_str, str_to_ts, dt_to_str
 from tclogger import CaseInsensitiveDict, DictStringifier, dict_to_str
 from tclogger import FileLogger
@@ -35,6 +35,16 @@ def test_run_timer_and_logger():
         logger.mesg(get_now_ts())
         logger.success(get_now_str())
         logger.note(f"Now: {logstr.mesg(get_now_str())}, ({logstr.file(get_now_ts())})")
+
+
+def test_now_and_timezone():
+    logger.success(get_now_str())
+    set_timezone("Europe/London")
+    logger.note(get_now_str())
+    set_timezone("America/New_York")
+    logger.warn(get_now_str())
+    set_timezone("Asia/Shanghai")
+    logger.success(get_now_str())
 
 
 def test_dt_to_str():
@@ -170,6 +180,7 @@ def test_decorations():
 if __name__ == "__main__":
     test_logger_verbose()
     test_run_timer_and_logger()
+    test_now_and_timezone()
     test_dt_to_str()
     test_color()
     test_case_insensitive_dict()
