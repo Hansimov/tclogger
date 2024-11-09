@@ -20,10 +20,6 @@ See: [example.py](https://github.com/Hansimov/tclogger/blob/main/example.py)
 
 ```python
 import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent / "src"))
-
 import tclogger
 import time
 
@@ -253,6 +249,29 @@ def test_logbar_total():
         time.sleep(0.01)
 
 
+def test_logbar_verbose():
+    total = 1000
+    logbar1 = TCLogbar(total=total, show_datetime=False, head="bar1", verbose=False)
+    logger.note("> Here should NOT show bar1")
+    for i in range(total):
+        logbar1.update(1)
+    print()
+
+    logbar2 = TCLogbar(total=total, show_datetime=False, head="bar2", verbose=True)
+    logger.note("> Here should show bar2")
+    for i in range(total):
+        logbar2.update(1)
+    print()
+
+    logger.note("> Here should NOT show bar1 and bar2")
+    TCLogbarGroup([logbar1, logbar2], verbose=False)
+    print()
+
+    logger.note("> Here should show bar1 and bar2")
+    TCLogbarGroup([logbar1, logbar2], verbose=True)
+    print()
+
+
 def test_decorations():
     text = "Hello World"
     logger.note(f"Brackets: {logstr.mesg(brk(text))}")
@@ -275,5 +294,6 @@ if __name__ == "__main__":
     test_logbar()
     test_logbar_group()
     test_logbar_total()
+    test_logbar_verbose()
     test_decorations()
 ```
