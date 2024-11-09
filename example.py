@@ -14,7 +14,7 @@ from tclogger import Runtimer, OSEnver, shell_cmd
 from tclogger import get_now_ts, get_now_str, get_now_ts_str
 from tclogger import TIMEZONE, set_timezone, tcdatetime
 from tclogger import ts_to_str, str_to_ts, dt_to_str
-from tclogger import CaseInsensitiveDict, DictStringifier, dict_to_str
+from tclogger import CaseInsensitiveDict, dict_to_str, dict_get, dict_set
 from tclogger import FileLogger
 from tclogger import TCLogbar, TCLogbarGroup
 from tclogger import brk, brc, brp
@@ -94,6 +94,32 @@ def test_case_insensitive_dict():
     print(d)
     d["hELLo"] = "New WORLD"
     print(d["HEllO"])
+    print(d)
+
+
+def test_dict_get_and_set():
+    d = {
+        "owner": {"name": "Alice", "mid": 12345},
+        "tags": ["tag1", "tag2", "tag3"],
+        "children": [
+            {
+                "owner": {"name": "Bob", "mid": 54321},
+                "tags": ["tag4", "tag5", "tag6"],
+            }
+        ],
+    }
+    print(dict_get(d, "owner.name"))
+    print(dict_get(d, ["children", 0, "owner", "mid"]))
+    dict_set(d, "owner.name", "Alice2")
+    print(d)
+    dict_set(d, ["owner", "mid"], 56789)
+    print(d)
+    print(dict_get(d, "owner.none", default="NotExist"))
+    dict_set(d, "owner.new", "NewValue")
+    print(d)
+    dict_set(d, ["children", 1, "owner", "name"], "Bob2")
+    print(d)
+    dict_set(d, ["tags", 3], "tagsX")
     print(d)
 
 
@@ -203,6 +229,7 @@ if __name__ == "__main__":
     test_dt_to_str()
     test_color()
     test_case_insensitive_dict()
+    test_dict_get_and_set()
     test_dict_to_str()
     test_align_dict_list()
     test_list_of_dicts()

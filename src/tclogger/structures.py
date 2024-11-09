@@ -1,3 +1,6 @@
+from typing import Union
+
+
 class CaseInsensitiveDict(dict):
     """Inspired by: https://stackoverflow.com/a/32888599"""
 
@@ -47,3 +50,33 @@ class CaseInsensitiveDict(dict):
         for k in list(self.keys()):
             v = super(CaseInsensitiveDict, self).pop(k)
             self.__setitem__(k, v)
+
+
+def dict_get(d: dict, keys: Union[str, list[str]], default=None, sep: str = "."):
+    if isinstance(keys, str) and sep:
+        keys = keys.split(sep)
+    for key in keys:
+        if (isinstance(d, dict) and key in d) or (isinstance(d, list) and key < len(d)):
+            d = d[key]
+        else:
+            return default
+    return d
+
+
+def dict_set(d: dict, keys: Union[str, list[str]], value, sep: str = "."):
+    if isinstance(keys, str) and sep:
+        keys = keys.split(sep)
+    for key in keys[:-1]:
+        if isinstance(d, dict):
+            d = d.setdefault(key, {})
+        elif isinstance(d, list):
+            if key >= len(d):
+                d.extend([{} for _ in range(key - len(d) + 1)])
+            d = d[key]
+
+    if isinstance(d, dict):
+        d[keys[-1]] = value
+    elif isinstance(d, list):
+        if keys[-1] >= len(d):
+            d.extend([None for _ in range(keys[-1] - len(d) + 1)])
+        d[keys[-1]] = value
