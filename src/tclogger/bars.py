@@ -60,6 +60,8 @@ class TCLogbar:
         self.line_height: int = 1
         self.group: TCLogbarGroup = None
         self.node_idx: int = None
+        if self.show_at_init:
+            self.update(flush=True)
 
     def is_num(self, num: Union[int, float]):
         return isinstance(num, (int, float))
@@ -112,14 +114,16 @@ class TCLogbar:
 
         if self.is_num(self.total) and self.is_num(self.count) and self.total > 0:
             self.percent_float = self.count / self.total * 100
-            self.percent = min(int(self.percent_float), 100)
+            self.percent = int(self.percent_float)
         else:
             self.percent_float = None
             self.percent = None
 
         if flush is True:
             pass
-        elif self.percent_float >= 100 or self.percent_float <= 0:
+        elif self.is_num(self.percent_float) and (
+            self.percent_float >= 100 or self.percent_float <= 0
+        ):
             flush = True
         elif self.flush_interval is not None:
             flush_dt = self.now - self.flush_t
@@ -166,7 +170,7 @@ class TCLogbar:
             grids = self.grid_symbols
 
         if self.percent is not None:
-            count_total_col = self.count / self.total * self.cols
+            count_total_col = min(self.count / self.total, 1) * self.cols
             full_grid_cols = int(count_total_col)
             active_grid_idx = min(
                 int(((count_total_col) - int(count_total_col)) * (len(grids) - 1)),
@@ -245,7 +249,11 @@ class TCLogbar:
             desc_str = ""
 
         if self.show_color:
-            logstr_progress = self.PROGRESS_LOGSTR[self.percent // 25 * 25]
+            if not self.is_num(self.percent):
+                progress_logstr_key = 0
+            else:
+                progress_logstr_key = min(self.percent // 25 * 25, 100)
+            logstr_progress = self.PROGRESS_LOGSTR[progress_logstr_key]
             count_str = logstr_progress(count_str)
             total_str = logstr.mesg(total_str)
             now_str = logstr.mesg(now_str)

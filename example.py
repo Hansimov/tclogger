@@ -215,6 +215,22 @@ def test_logbar_group():
         epoch_bar.update(1, desc=f"[{epoch+1}/{epochs}]", flush=True)
 
 
+def test_logbar_total():
+    total = 500
+
+    logbar = TCLogbar()
+    for i in range(total):
+        logbar.update(1)
+        time.sleep(0.001)
+    logbar.flush()
+    print()
+
+    logbar = TCLogbar(total=total)
+    for i in range(total + 250):
+        logbar.update(1)
+        time.sleep(0.01)
+
+
 def test_decorations():
     text = "Hello World"
     logger.note(f"Brackets: {logstr.mesg(brk(text))}")
@@ -236,6 +252,7 @@ if __name__ == "__main__":
     test_file_logger()
     test_logbar()
     test_logbar_group()
+    test_logbar_total()
     test_decorations()
 
     # python example.py
