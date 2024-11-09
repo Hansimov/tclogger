@@ -200,9 +200,10 @@ def test_logbar_group():
     epoch_bar.set_desc(f"[0/{epochs}]")
     progress_bar = TCLogbar(total=total)
     sub_progress_bar = TCLogbar(total=sub_total)
-    TCLogbarGroup([epoch_bar, progress_bar, sub_progress_bar])
-    print("This is a noise line to test lazy blank prints of logbar group.")
-    epoch_bar.update(0)
+    TCLogbarGroup([epoch_bar, progress_bar, sub_progress_bar], show_at_init=True)
+    # TCLogbarGroup([epoch_bar, progress_bar, sub_progress_bar], show_at_init=False)
+    # print("This is a noise line to test lazy blank prints of logbar group.")
+    # epoch_bar.update(0)
     for epoch in range(epochs):
         for i in range(total):
             for j in range(sub_total):

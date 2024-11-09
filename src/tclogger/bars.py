@@ -29,8 +29,8 @@ class TCLogbar:
         head: str = "",
         desc: str = "",
         cols: int = 35,
-        auto_cols: bool = True,
-        show_at_init: bool = True,
+        auto_cols: bool = False,
+        show_at_init: bool = False,
         show_datetime: bool = False,
         show_iter_per_second: bool = True,
         show_color: bool = True,
@@ -308,8 +308,9 @@ class TCLogbar:
 
 
 class TCLogbarGroup:
-    def __init__(self, bars: list[TCLogbar]):
+    def __init__(self, bars: list[TCLogbar], show_at_init: bool = True):
         self.bars = bars
+        self.show_at_init = show_at_init
         self.cursor = CursorController()
         self.lock = threading.Lock()
         self.init_bars()
@@ -322,6 +323,9 @@ class TCLogbarGroup:
         self.total_line_height = 0
         for bar in self.bars:
             self.total_line_height += bar.line_height
+        if self.show_at_init:
+            for bar in self.bars:
+                bar.update(flush=True)
 
     def write(self, msg: str, flush: bool = True):
         with self.lock:
