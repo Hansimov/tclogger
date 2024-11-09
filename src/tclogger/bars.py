@@ -38,6 +38,7 @@ class TCLogbar:
         grid_symbols: str = " ▏▎▍▌▋▊▉█",
         grid_shades: str = "░▒▓█",
         grid_mode: Literal["symbol", "shade"] = "symbol",
+        verbose: bool = True,
     ):
         self.count = count
         self.total = total
@@ -53,6 +54,8 @@ class TCLogbar:
         self.grid_symbols = grid_symbols
         self.grid_shades = grid_shades
         self.grid_mode = grid_mode
+        self.verbose = verbose
+        self.bar_str = None
         self.init_t = get_now()
         self.start_t = self.init_t
         self.flush_t = self.init_t
@@ -66,6 +69,9 @@ class TCLogbar:
     def is_num(self, num: Union[int, float]):
         return isinstance(num, (int, float))
 
+    def is_grouped(self):
+        return self.group is not None and self.node_idx is not None
+
     def move_cursor(self):
         self.cursor.move(row=self.line_height - 1)
         self.cursor.erase_line()
@@ -78,12 +84,16 @@ class TCLogbar:
     def log(self, msg: str = None):
         if msg is None:
             return
-        if self.group is None or self.node_idx is None:
-            self.move_cursor()
-            self.write(msg)
-        else:
+        if self.is_grouped():
+            if not self.group.verbose:
+                return
             self.group.move_cursor(self.node_idx)
             self.group.write(msg)
+        else:
+            if not self.verbose:
+                return
+            self.move_cursor()
+            self.write(msg)
 
         terminal_width = os.get_terminal_size().columns
         if len(decolored(msg)) > terminal_width:
@@ -92,8 +102,9 @@ class TCLogbar:
             self.line_height = 1
 
     def flush(self):
-        self.construct_bar_str()
-        self.log(self.bar_str)
+        if self.verbose or (self.is_grouped() and self.group.verbose):
+            self.construct_bar_str()
+            self.log(self.bar_str)
 
     def update(
         self,
@@ -275,10 +286,12 @@ class TCLogbar:
 
     def reset(self, linebreak: bool = False):
         if linebreak:
-            if self.group is None or self.node_idx is None:
-                self.write("\n")
+            if self.is_grouped():
+                if self.group.verbose:
+                    self.group.write("\n")
             else:
-                self.group.write("\n")
+                if self.verbose:
+                    self.write("\n")
         self.count = 0
         self.start_t = get_now()
 
@@ -308,9 +321,12 @@ class TCLogbar:
 
 
 class TCLogbarGroup:
-    def __init__(self, bars: list[TCLogbar], show_at_init: bool = True):
+    def __init__(
+        self, bars: list[TCLogbar], show_at_init: bool = True, verbose: bool = True
+    ):
         self.bars = bars
         self.show_at_init = show_at_init
+        self.verbose = verbose
         self.cursor = CursorController()
         self.lock = threading.Lock()
         self.init_bars()
