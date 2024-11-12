@@ -5,13 +5,22 @@ import inspect
 import logging
 import shutil
 
-from .colors import colored
+from .colors import colored, decolored, COLOR_TYPE
 
 
-def add_fillers(text, filler="=", fill_side="both"):
+def add_fillers(
+    text: str,
+    filler: str = "=",
+    fill_side: str = "both",
+    is_text_colored: bool = False,
+    fill_color: COLOR_TYPE = None,
+):
     terminal_width = shutil.get_terminal_size().columns
     text = text.strip()
-    text_width = len(text)
+    if is_text_colored:
+        text_width = len(decolored(text))
+    else:
+        text_width = len(text)
     if text_width >= terminal_width:
         return text
 
@@ -28,6 +37,10 @@ def add_fillers(text, filler="=", fill_side="both"):
         trailing_fill_str = " " + filler * (terminal_width - text_width - 1)
     else:
         raise ValueError("Invalid fill_side")
+
+    if fill_color:
+        leading_fill_str = colored(leading_fill_str, color=fill_color)
+        trailing_fill_str = colored(trailing_fill_str, color=fill_color)
 
     filled_str = f"{leading_fill_str}{text}{trailing_fill_str}"
     return filled_str
