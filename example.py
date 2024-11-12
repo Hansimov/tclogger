@@ -13,7 +13,7 @@ from tclogger import TCLogger, logger, TCLogstr, logstr, colored, decolored
 from tclogger import Runtimer, OSEnver, shell_cmd
 from tclogger import get_now_ts, get_now_str, get_now_ts_str
 from tclogger import TIMEZONE, set_timezone, tcdatetime
-from tclogger import ts_to_str, str_to_ts, dt_to_str
+from tclogger import ts_to_str, str_to_ts, dt_to_str, unify_ts_and_str
 from tclogger import CaseInsensitiveDict, dict_to_str, dict_get, dict_set
 from tclogger import FileLogger
 from tclogger import TCLogbar, TCLogbarGroup
@@ -75,6 +75,13 @@ def test_dt_to_str():
     logger.note(f"dt3: {logstr.success(dt_to_str(dt3))}")
     dt4 = timedelta(seconds=3600 * 24 * 1 + 3600 * 8 + 60 * 24 + 12)
     logger.note(f"dt4: {logstr.success(dt_to_str(dt4))}")
+
+    t_ts = 1700000000
+    t_ts, t_str = unify_ts_and_str(t_ts)
+    logger.mesg(f"t_ts: {logstr.success(t_ts)}, t_str: {logstr.success(t_str)}")
+    t_str = "2021-08-31 08:53:20"
+    t_ts, t_str = unify_ts_and_str(t_str)
+    logger.mesg(f"t_ts: {logstr.success(t_ts)}, t_str: {logstr.success(t_str)}")
 
 
 def test_color():
