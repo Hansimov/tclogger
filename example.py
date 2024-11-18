@@ -18,6 +18,7 @@ from tclogger import CaseInsensitiveDict, dict_to_str, dict_get, dict_set
 from tclogger import FileLogger
 from tclogger import TCLogbar, TCLogbarGroup
 from tclogger import brk, brc, brp
+from tclogger import int_bits, max_key_len, chars_len
 
 
 def test_logger_verbose():
@@ -269,6 +270,19 @@ def test_decorations():
     logger.note(f"Parens  : {logstr.mesg(brp(text))}")
 
 
+def test_math():
+    texts = ["你好", "Hello", 12345, "你好，世界！", "Hello, World!"]
+    res = {}
+    for text in texts:
+        text_len = chars_len(text)
+        res[text] = text_len
+    key_max_len = max_key_len(res)
+    for text, text_len in res.items():
+        text_str = str(text) + " " * (key_max_len - chars_len(str(text)))
+        text_len_str = logstr.mesg(brk(text_len))
+        logger.note(f"{text_str} : {text_len_str}")
+
+
 if __name__ == "__main__":
     test_logger_verbose()
     test_run_timer_and_logger()
@@ -286,5 +300,6 @@ if __name__ == "__main__":
     test_logbar_total()
     test_logbar_verbose()
     test_decorations()
+    test_math()
 
     # python example.py
