@@ -11,3 +11,4 @@ from .formats import DictStringifier, dict_to_str
 from .files import FileLogger
 from .bars import TCLogbar, TCLogbarGroup
 from .decorations import brk, brc, brp
+from .strings import chars_slice
