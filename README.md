@@ -36,6 +36,7 @@ from tclogger import FileLogger
 from tclogger import TCLogbar, TCLogbarGroup
 from tclogger import brk, brc, brp
 from tclogger import int_bits, max_key_len, chars_len
+from tclogger import chars_slice
 
 
 def test_logger_verbose():
@@ -300,6 +301,13 @@ def test_math():
         logger.note(f"{text_str} : {text_len_str}")
 
 
+def test_str_slice():
+    texts = ["你好我是小明", "Hello", 12345789, "你好，世界！", "Hello, World!", "X"]
+    for text in texts:
+        sliced_str = chars_slice(str(text), start=0, end=6)
+        logger.note(f"{sliced_str}: {logstr.mesg(text)}")
+
+
 if __name__ == "__main__":
     test_logger_verbose()
     test_run_timer_and_logger()
@@ -318,4 +326,5 @@ if __name__ == "__main__":
     test_logbar_verbose()
     test_decorations()
     test_math()
+    test_str_slice()
 ```
