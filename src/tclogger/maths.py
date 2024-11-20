@@ -11,6 +11,7 @@ def int_bits(num, base: int = 10):
 
 def chars_len(chars: Union[str, int]) -> int:
     """Calc length of chars"""
+    chars = str(chars)
     res = 0
     if isinstance(chars, int):
         chars = str(chars)
