@@ -289,7 +289,7 @@ def test_decorations():
 
 
 def test_math():
-    texts = ["你好", "Hello", 12345, "你好，世界！", "Hello, World!"]
+    texts = ["你好", "Hello", 12345, "你好，世界！", "Hello, World!", None, 0, ""]
     res = {}
     for text in texts:
         text_len = chars_len(text)
