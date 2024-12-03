@@ -66,6 +66,15 @@ def test_now_and_timezone():
     # Asia/Shanghai
     set_timezone("Asia/Shanghai")
     logger.success(get_now_str())
+    # Compare
+    dt1 = tcdatetime.fromisoformat("2024-12-03 12:00:00")
+    dt2 = tcdatetime(year=2024, month=12, day=4)
+    dt3 = tcdatetime.max()
+    logger.note(f"dt1: {dt1}, dt2: {dt2}, dt3: {dt3}")
+    cp12 = "<" if dt1 < dt2 else ">"
+    cp23 = "<" if dt2 < dt3 else ">"
+    cp13 = "<" if dt1 < dt3 else ">"
+    logger.success(f"dt1 {cp12} dt2; dt2 {cp23} dt3; dt1 {cp13} dt3")
 
 
 def test_dt_to_str():

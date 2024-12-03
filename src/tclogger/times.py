@@ -21,14 +21,27 @@ class tcdatetime(datetime):
         instance = super().__new__(cls, *args, **kwargs)
         return instance.replace(tzinfo=ZoneInfo(TIMEZONE))
 
-    def now():
+    @classmethod
+    def now(cls):
         return datetime.now(ZoneInfo(TIMEZONE))
 
+    @classmethod
     def fromtimestamp(ts):
-        return datetime.fromtimestamp(ZoneInfo(TIMEZONE))
+        return datetime.fromtimestamp(ts, ZoneInfo(TIMEZONE))
 
-    def fromisoformat(s):
+    @classmethod
+    def fromisoformat(cls, s):
         return datetime.fromisoformat(s).replace(tzinfo=ZoneInfo(TIMEZONE))
+
+    @classmethod
+    def min(cls):
+        """NOTE: In datetime, it should be `datetime.min`. However, classmethod property is no longer supported for Python >= 3.13, so use `tcdatetime.min()`."""
+        return datetime.min.replace(tzinfo=ZoneInfo(TIMEZONE))
+
+    @classmethod
+    def max(cls):
+        """NOTE: In datetime, it should be `datetime.max`. However, classmethod property is no longer supported for Python >= 3.13, so use `tcdatetime.max()`."""
+        return datetime.max.replace(tzinfo=ZoneInfo(TIMEZONE))
 
 
 def get_now() -> datetime:
