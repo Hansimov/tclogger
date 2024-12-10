@@ -5,6 +5,7 @@ from typing import Union
 
 from .colors import colored, decolored
 from .maths import max_key_len
+from .strings import chars_slice
 
 
 class DictListAligner:
@@ -188,7 +189,7 @@ class DictStringifier:
                 if self.add_quotes:
                     key_str = f'"{key_str}"'
                 if self.align_colon:
-                    key_str = key_str.ljust(key_len)
+                    key_str = chars_slice(key_str, end=key_len)
                 value_str, value_str_type = self.dict_to_str(
                     value, depth=depth + 1 if isinstance(value, (dict, list)) else depth
                 )
