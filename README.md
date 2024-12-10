@@ -164,6 +164,7 @@ def test_dict_to_str():
         "now": get_now_str(),
         "list": [1, 2, 3, [4, 5], "6"],
         "nested": {"key1": "value1", "key2": "value2", "key_3": {"subkey": "subvalue"}},
+        "中文Key": "中文Value",
     }
     s = dict_to_str(d, add_quotes=True, max_depth=1)
     logger.success(s)
