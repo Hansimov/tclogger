@@ -20,6 +20,10 @@ See: [example.py](https://github.com/Hansimov/tclogger/blob/main/example.py)
 
 ```python
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent / "src"))
+
 import tclogger
 import time
 
@@ -318,6 +322,16 @@ def test_str_slice():
         logger.note(f"{sliced_str}: {logstr.mesg(text)}")
 
 
+def test_temp_indent():
+    logger.note("no indent")
+    with logger.temp_indent(2):
+        logger.warn("* indent 2")
+        with logger.temp_indent(2):
+            logger.err("* indent 4")
+        logger.hint("* indent 2")
+    logger.mesg("no indent")
+
+
 if __name__ == "__main__":
     test_logger_verbose()
     test_run_timer_and_logger()
@@ -337,4 +351,5 @@ if __name__ == "__main__":
     test_decorations()
     test_math()
     test_str_slice()
+    test_temp_indent()
 ```
