@@ -12,3 +12,4 @@ from .files import FileLogger
 from .bars import TCLogbar, TCLogbarGroup
 from .decorations import brk, brc, brp
 from .strings import chars_slice
+from .attrs import attrs_to_dict
