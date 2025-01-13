@@ -19,15 +19,11 @@ python example.py
 See: [example.py](https://github.com/Hansimov/tclogger/blob/main/example.py)
 
 ```python
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent / "src"))
-
 import tclogger
 import time
 
 from datetime import timedelta
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from tclogger import TCLogger, logger, TCLogstr, logstr, colored, decolored
@@ -41,6 +37,7 @@ from tclogger import TCLogbar, TCLogbarGroup
 from tclogger import brk, brc, brp
 from tclogger import int_bits, max_key_len, chars_len
 from tclogger import chars_slice
+from tclogger import attrs_to_dict
 
 
 def test_logger_verbose():
@@ -332,6 +329,33 @@ def test_temp_indent():
     logger.mesg("no indent")
 
 
+def test_attrs_to_dict():
+    logger.note("> Logging attrs of logger:")
+    attrs_dict = attrs_to_dict(logger)
+    logger.mesg(dict_to_str(attrs_dict), indent=2)
+
+    logger.note("> Logging attrs of example:")
+    # a obj which allows to add attributes
+    obj = type("AnyObject", (), {})()
+    obj.dict_val = {
+        "hello": "world",
+        "now": get_now_str(),
+        "list": [1, 2, 3, [4, 5], "6"],
+        "nested": {"key1": "value1", "key2": "value2", "key_3": {"subkey": "subvalue"}},
+        "中文Key": "中文Value",
+    }
+    obj.int_val = 12345
+    obj.float_val = 3.0
+    obj.bool_val = True
+    obj.str_val = "Hello World"
+    obj.none_val = None
+    obj.list_val = [1, 2, 3, 4, 5]
+    obj.list_dict_val = [{"k1": "v11", "k2": "v2"}, {"k1": "v21"}, {"k2": "v22"}]
+    obj.tuple_val = (1, 2, 3, "4", {"5": 6})
+    obj_attrs_dict = attrs_to_dict(obj)
+    logger.mesg(dict_to_str(obj_attrs_dict), indent=2)
+
+
 if __name__ == "__main__":
     test_logger_verbose()
     test_run_timer_and_logger()
@@ -352,4 +376,5 @@ if __name__ == "__main__":
     test_math()
     test_str_slice()
     test_temp_indent()
+    test_attrs_to_dict()
 ```
