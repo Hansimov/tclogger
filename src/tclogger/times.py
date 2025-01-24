@@ -67,6 +67,10 @@ def ts_to_str(ts: int) -> str:
     return datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
 
 
+def str_to_t(s: str) -> datetime:
+    return datetime.fromisoformat(s)
+
+
 def str_to_ts(s: str) -> int:
     return int(datetime.fromisoformat(s).timestamp())
 
