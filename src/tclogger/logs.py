@@ -16,6 +16,9 @@ def add_fillers(
     fill_color: COLOR_TYPE = None,
 ):
     terminal_width = shutil.get_terminal_size().columns
+    if not text:
+        filled_str = colored(filler * terminal_width, color=fill_color)
+        return filled_str
     text = text.strip()
     if is_text_colored:
         text_width = len(decolored(text))
