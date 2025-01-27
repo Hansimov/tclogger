@@ -5,7 +5,7 @@ from tclogger import get_now_str
 from typing import Literal, Union
 
 
-MSG_PREFIXES = {"note": ">", "error": "×", "success": "✓"}
+MSG_PREFIXES = {"note": ">", "error": "×", "success": "√"}
 
 
 class FileLogger:
@@ -20,14 +20,21 @@ class FileLogger:
     def log(
         self,
         msg: str,
-        msg_type: Literal["note", "error", "success"] = "note",
+        msg_type: Literal["note", "error", "success"] = None,
+        prefix: str = None,
         add_now: bool = True,
     ):
-        prefix = MSG_PREFIXES.get(msg_type, ">")
-        if add_now:
-            line = f"{prefix} [{get_now_str()}] {msg}\n"
+        if prefix:
+            prefix_str = f"{prefix} "
+        elif msg_type:
+            prefix_str = MSG_PREFIXES.get(msg_type, "*") + " "
         else:
-            line = f"{prefix} {msg}\n"
+            prefix_str = ""
+
+        if add_now:
+            line = f"{prefix_str}[{get_now_str()}] {msg}\n"
+        else:
+            line = f"{prefix_str}{msg}\n"
         with self.lock:
             with open(self.log_path, "a") as f:
                 f.write(line)

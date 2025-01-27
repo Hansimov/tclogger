@@ -161,6 +161,9 @@ def test_dict_to_str():
 def test_file_logger():
     file_logger = FileLogger(Path(__file__).parent / "test.log")
     file_logger.log("This is an error message", "error")
+    file_logger.log("This is a default message")
+    file_logger.log("This is a prefixed message", prefix="+")
+    file_logger.log("This is a success message", msg_type="success")
 
 
 def test_align_dict_list():
