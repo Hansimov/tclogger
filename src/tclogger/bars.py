@@ -112,6 +112,7 @@ class TCLogbar:
         count: int = None,
         head: str = None,
         desc: str = None,
+        remain_seconds: float = None,
         flush: bool = False,
     ):
         self.now = get_now()
@@ -155,17 +156,20 @@ class TCLogbar:
 
             self.dt = self.now - self.start_t
             dt_seconds = dt_to_sec(self.dt, precision=3)
-            if (
+
+            if remain_seconds is not None and self.is_num(remain_seconds):
+                self.remain_seconds = remain_seconds
+            elif (
                 self.is_num(self.total)
                 and self.is_num(self.count)
                 and self.count > 0
                 and self.total - self.count >= 0
             ):
-                self.remain_dt = timedelta(
-                    seconds=dt_seconds * (self.total - self.count) / self.count
+                self.remain_seconds = (
+                    dt_seconds * (self.total - self.count) / self.count
                 )
             else:
-                self.remain_dt = None
+                self.remain_seconds = None
 
             if self.is_num(self.count) and self.count > 0 and dt_seconds > 0:
                 self.iter_per_second = round(self.count / dt_seconds, ndigits=1)
@@ -222,8 +226,8 @@ class TCLogbar:
 
         grid_str = self.construct_grid_str()
 
-        if self.remain_dt is not None:
-            remain_str = dt_to_str(self.remain_dt)
+        if self.remain_seconds is not None:
+            remain_str = dt_to_str(self.remain_seconds)
         else:
             remain_str = "??:??"
 
