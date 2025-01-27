@@ -91,15 +91,22 @@ def dt_to_sec(dt: timedelta, precision: int = 0) -> float:
 
 
 def dt_to_str(
-    dt: timedelta,
+    dt: Union[timedelta, int, float],
     precision: int = 0,
     str_format: Literal["unit", "colon"] = "colon",
 ) -> str:
-    hours = dt.days * 24 + dt.seconds // 3600
-    minutes = (dt.seconds // 60) % 60
-    seconds = dt.seconds % 60
-    microseconds = dt.microseconds / 1000000
-    precised_seconds = seconds + microseconds
+    if isinstance(dt, timedelta):
+        hours = dt.days * 24 + dt.seconds // 3600
+        minutes = (dt.seconds // 60) % 60
+        seconds = dt.seconds % 60
+        microseconds = dt.microseconds / 1000000
+        precised_seconds = seconds + microseconds
+    else:
+        hours = int(dt) // 3600
+        minutes = (int(dt) // 60) % 60
+        seconds = int(dt) % 60
+        microseconds = dt - int(dt)
+        precised_seconds = seconds + microseconds
 
     if str_format == "unit":
         hours_str = f"{hours}hr" if hours > 0 else ""
@@ -115,6 +122,8 @@ def dt_to_str(
         minutes_str = f"{minutes:02d}"
         seconds_str = f"{seconds:02d}"
         time_str = ":".join([hours_str, minutes_str, seconds_str]).strip(":")
+        if precision is not None and precision > 0:
+            time_str += f".{int(microseconds * 10**precision):0{precision}d}"
 
     return time_str
 

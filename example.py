@@ -86,7 +86,9 @@ def test_dt_to_str():
     dt3 = timedelta(seconds=3600 * 8 + 60 * 24 + 12)
     logger.note(f"dt3: {logstr.success(dt_to_str(dt3))}")
     dt4 = timedelta(seconds=3600 * 24 * 1 + 3600 * 8 + 60 * 24 + 12)
-    logger.note(f"dt4: {logstr.success(dt_to_str(dt4))}")
+    logger.note(f"dt4: {logstr.success(dt_to_str(dt4, precision=3))}")
+    dt5 = 360100.123
+    logger.note(f"dt5: {logstr.success(dt_to_str(dt5, precision=3))}")
 
     t_ts = 1700000000
     t_ts, t_str = unify_ts_and_str(t_ts)
