@@ -26,6 +26,7 @@ class TCLogbar:
         self,
         count: int = 0,
         total: int = None,
+        start_count: int = 0,
         head: str = "",
         desc: str = "",
         cols: int = 35,
@@ -42,6 +43,7 @@ class TCLogbar:
     ):
         self.count = count
         self.total = total
+        self.start_count = start_count
         self.head = head
         self.desc = desc
         self.cols = cols
@@ -71,6 +73,9 @@ class TCLogbar:
 
     def is_grouped(self):
         return self.group is not None and self.node_idx is not None
+
+    def elapsed_count(self):
+        return self.count - self.start_count
 
     def move_cursor(self):
         self.cursor.move(row=self.line_height - 1)
@@ -162,17 +167,21 @@ class TCLogbar:
             elif (
                 self.is_num(self.total)
                 and self.is_num(self.count)
-                and self.count > 0
-                and self.total - self.count >= 0
+                and self.elapsed_count() > 0
+                and self.total - self.elapsed_count() >= 0
             ):
                 self.remain_seconds = (
-                    dt_seconds * (self.total - self.count) / self.count
+                    dt_seconds
+                    * (self.total - self.elapsed_count())
+                    / self.elapsed_count()
                 )
             else:
                 self.remain_seconds = None
 
             if self.is_num(self.count) and self.count > 0 and dt_seconds > 0:
-                self.iter_per_second = round(self.count / dt_seconds, ndigits=1)
+                self.iter_per_second = round(
+                    self.elapsed_count() / dt_seconds, ndigits=1
+                )
             else:
                 self.iter_per_second = None
 
@@ -307,6 +316,9 @@ class TCLogbar:
 
     def set_count(self, count: int = None):
         self.count = count
+
+    def set_start_count(self, start_count: int = None):
+        self.start_count = start_count
 
     def increment(self, increment: int = None):
         self.count += increment
