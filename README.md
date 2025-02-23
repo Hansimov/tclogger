@@ -120,8 +120,9 @@ def test_color():
     s2 = colored("world", color="red", bg_color="bg_blue", fonts=["bold", "underline"])
     s3 = colored(f"BEG {s1} __ {s2} END")
     logger.note(s3)
-    logger.success(s3)
-    s4 = decolored(logstr.success(s3))
+    logger.okay(s3)
+    s4 = decolored(logstr.okay(s3))
+    logger.glow("Glowing text")
     print(s4)
 
 
@@ -178,6 +179,9 @@ def test_dict_to_str():
 def test_file_logger():
     file_logger = FileLogger(Path(__file__).parent / "test.log")
     file_logger.log("This is an error message", "error")
+    file_logger.log("This is a default message")
+    file_logger.log("This is a prefixed message", prefix="+")
+    file_logger.log("This is a success message", msg_type="success")
 
 
 def test_align_dict_list():
@@ -379,4 +383,7 @@ if __name__ == "__main__":
     test_str_slice()
     test_temp_indent()
     test_attrs_to_dict()
+
+    # python example.py
+
 ```
