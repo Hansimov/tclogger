@@ -77,6 +77,9 @@ class TCLogbar:
     def elapsed_count(self):
         return self.count - self.start_count
 
+    def remain_count(self):
+        return self.total - self.count
+
     def move_cursor(self):
         self.cursor.move(row=self.line_height - 1)
         self.cursor.erase_line()
@@ -168,12 +171,10 @@ class TCLogbar:
                 self.is_num(self.total)
                 and self.is_num(self.count)
                 and self.elapsed_count() > 0
-                and self.total - self.elapsed_count() >= 0
+                and self.remain_count() >= 0
             ):
                 self.remain_seconds = (
-                    dt_seconds
-                    * (self.total - self.elapsed_count())
-                    / self.elapsed_count()
+                    dt_seconds * self.remain_count() / self.elapsed_count()
                 )
             else:
                 self.remain_seconds = None
