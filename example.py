@@ -103,8 +103,9 @@ def test_color():
     s2 = colored("world", color="red", bg_color="bg_blue", fonts=["bold", "underline"])
     s3 = colored(f"BEG {s1} __ {s2} END")
     logger.note(s3)
-    logger.success(s3)
-    s4 = decolored(logstr.success(s3))
+    logger.okay(s3)
+    s4 = decolored(logstr.okay(s3))
+    logger.glow("Glowing text")
     print(s4)
 
 

@@ -49,26 +49,38 @@ def add_fillers(
     return filled_str
 
 
-LOG_METHODS = {
+LOG_METHOD_COLORS = {
     "err": ("error", "red"),
     "warn": ("warning", "light_red"),
     "hint": ("info", "light_yellow"),
+    "glow": ("info", "light_yellow"),
     "note": ("info", "light_magenta"),
     "mesg": ("info", "light_cyan"),
     "file": ("info", "light_blue"),
     "line": ("info", "white"),
+    "okay": ("info", "light_green"),
     "success": ("info", "light_green"),
     "fail": ("info", "light_red"),
     "back": ("debug", "light_cyan"),
 }
 
+LOG_METHOD_BG_COLORS = {
+    "glow": "bg_blue",
+}
+
 
 class TCLogstr:
     def __init__(self):
-        self.COLORS = {k: v[1] for k, v in LOG_METHODS.items()}
+        self.COLORS = {k: v[1] for k, v in LOG_METHOD_COLORS.items()}
 
     def colored_str(self, msg, method, *args, **kwargs):
-        return colored(msg, color=self.COLORS[method.lower()], *args, **kwargs)
+        return colored(
+            msg,
+            color=self.COLORS[method.lower()],
+            bg_color=LOG_METHOD_BG_COLORS.get(method, None),
+            *args,
+            **kwargs,
+        )
 
     def err(self, msg: str = ""):
         return self.colored_str(msg, "err")
@@ -78,6 +90,9 @@ class TCLogstr:
 
     def hint(self, msg: str = ""):
         return self.colored_str(msg, "hint")
+
+    def glow(self, msg: str = ""):
+        return self.colored_str(msg, "glow")
 
     def note(self, msg: str = ""):
         return self.colored_str(msg, "note")
@@ -93,6 +108,9 @@ class TCLogstr:
 
     def success(self, msg: str = ""):
         return self.colored_str(msg, "success")
+
+    def okay(self, msg: str = ""):
+        return self.colored_str(msg, "okay")
 
     def fail(self, msg: str = ""):
         return self.colored_str(msg, "fail")
@@ -228,11 +246,11 @@ class TCLogger(logging.Logger):
         handler = self.handlers[0]
         handler.terminator = end
 
-        level, color = LOG_METHODS[method]
+        level, color = LOG_METHOD_COLORS[method]
         getattr(self, level)(logstr.colored_str(indented_msg, method), *args, **kwargs)
 
     def route_log(self, method, msg, *args, **kwargs):
-        level, color = LOG_METHODS[method]
+        level, color = LOG_METHOD_COLORS[method]
         # if level is lower (less important) than self.log_level, do not log
         if self.LEVEL_NAMES[level] < self.LEVEL_NAMES[self.log_level]:
             return
@@ -243,6 +261,9 @@ class TCLogger(logging.Logger):
 
     def warn(self, msg: str = "", *args, **kwargs):
         self.route_log("warn", msg, *args, **kwargs)
+
+    def glow(self, msg: str = "", *args, **kwargs):
+        self.route_log("glow", msg, *args, **kwargs)
 
     def hint(self, msg: str = "", *args, **kwargs):
         self.route_log("hint", msg, *args, **kwargs)
@@ -261,6 +282,9 @@ class TCLogger(logging.Logger):
 
     def success(self, msg: str = "", *args, **kwargs):
         self.route_log("success", msg, *args, **kwargs)
+
+    def okay(self, msg: str = "", *args, **kwargs):
+        self.route_log("okay", msg, *args, **kwargs)
 
     def fail(self, msg: str = "", *args, **kwargs):
         self.route_log("fail", msg, *args, **kwargs)
