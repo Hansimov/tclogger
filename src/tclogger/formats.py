@@ -1,11 +1,11 @@
 """Format utils"""
 
 from copy import deepcopy
-from typing import Union
+from typing import Union, Literal
 
 from .colors import colored, decolored
 from .maths import max_key_len
-from .strings import chars_slice
+from .strings import chars_slice, chars_len
 
 
 class DictListAligner:
@@ -60,15 +60,15 @@ class DictListAligner:
                     aligned_widths_by_len[ak] = [0] * list_len
                 for i, vv in enumerate(v):
                     if isinstance(vv, str):
-                        vv_width = len(decolored(vv))
+                        vv_width = chars_len(decolored(vv))
                     else:
-                        vv_width = len(str(vv))
+                        vv_width = chars_len(str(vv))
                     aligned_widths_by_len[ak][i] = max(
                         aligned_widths_by_len[ak][i], vv_width
                     )
         return aligned_widths_by_len
 
-    def align_lists_in_dict(self, d: dict) -> None:
+    def align_lists_in_dict(self, d: dict, align: Literal["l", "r"] = None) -> None:
         dict_lists_by_len = self.extract_same_len_lists(d)
         aligned_widths_by_len = self.calc_aligned_widths(d)
         for ak, dd in dict_lists_by_len.items():
@@ -76,7 +76,7 @@ class DictListAligner:
             aligned_widths = aligned_widths_by_len[ak]
             for k, v in dd.items():
                 for i, vv in enumerate(v):
-                    v[i] = f"{vv:>{aligned_widths[i]}}"
+                    v[i] = chars_slice(vv, end=aligned_widths[i], align=align)
                 d[k] = v
 
 
@@ -87,6 +87,7 @@ class DictStringifier:
         max_depth: int = None,
         align_colon: bool = True,
         align_list: bool = True,
+        align_list_side: Literal["l", "r"] = None,
         add_quotes: bool = True,
         is_colored: bool = True,
         brace_colors: list[str] = ["light_blue", "light_cyan", "light_magenta"],
@@ -97,13 +98,13 @@ class DictStringifier:
         self.max_depth = max_depth
         self.align_colon = align_colon
         self.align_list = align_list
+        self.align_list_side = align_list_side
         self.add_quotes = add_quotes
         self.is_colored = is_colored
         self.depth_configs = {}
         self.brace_colors = brace_colors
         self.key_colors = key_colors
         self.value_colors = value_colors
-        self.dict_list_aligner = DictListAligner()
 
     def get_depth_config(self, depth: int):
         if depth in self.depth_configs:
@@ -179,7 +180,7 @@ class DictStringifier:
         if isinstance(d, dict):
             if self.align_list:
                 aligner = DictListAligner()
-                aligner.align_lists_in_dict(d)
+                aligner.align_lists_in_dict(d, align=self.align_list_side)
             if self.add_quotes:
                 key_len = max_key_len(d, 2)
             else:
@@ -239,6 +240,7 @@ def dict_to_str(
     max_depth: int = None,
     align_colon: bool = True,
     align_list: bool = True,
+    align_list_side: Literal["l", "r"] = None,
     add_quotes: bool = False,
     is_colored: bool = True,
     brace_colors: list[str] = ["light_blue", "light_cyan", "light_magenta"],
@@ -250,6 +252,7 @@ def dict_to_str(
         max_depth=max_depth,
         align_colon=align_colon,
         align_list=align_list,
+        align_list_side=align_list_side,
         add_quotes=add_quotes,
         is_colored=is_colored,
         brace_colors=brace_colors,
