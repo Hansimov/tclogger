@@ -53,7 +53,7 @@ LOG_METHOD_COLORS = {
     "err": ("error", "red"),
     "warn": ("warning", "light_red"),
     "hint": ("info", "light_yellow"),
-    "glow": ("info", "light_yellow"),
+    "glow": ("info", "black"),
     "note": ("info", "light_magenta"),
     "mesg": ("info", "light_cyan"),
     "file": ("info", "light_blue"),

@@ -41,9 +41,9 @@ class TCLogbar:
         grid_mode: Literal["symbol", "shade"] = "symbol",
         verbose: bool = True,
     ):
-        self.count = count
         self.total = total
         self.start_count = start_count
+        self.count = count or start_count
         self.head = head
         self.desc = desc
         self.cols = cols
