@@ -302,9 +302,19 @@ def test_math():
 
 
 def test_str_slice():
-    texts = ["你好我是小明", "Hello", 12345789, "你好，世界！", "Hello, World!", "X"]
+    texts = ["你好我是小明", "Hello", 12345789, "你好，世界！", "Hello, World!", "XX"]
+    beg, end = 1, 8
+    logger.file("pad None")
     for text in texts:
-        sliced_str = chars_slice(str(text), start=0, end=6)
+        sliced_str = chars_slice(str(text), beg=beg, end=end)
+        logger.note(f"{sliced_str}: {logstr.mesg(text)}")
+    logger.file("pad left")
+    for text in texts:
+        sliced_str = chars_slice(str(text), beg=beg, end=end, align="l")
+        logger.note(f"{sliced_str}: {logstr.mesg(text)}")
+    logger.file("pad right")
+    for text in texts:
+        sliced_str = chars_slice(str(text), beg=beg, end=end, align="r")
         logger.note(f"{sliced_str}: {logstr.mesg(text)}")
 
 
