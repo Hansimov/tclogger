@@ -31,6 +31,10 @@ def chars_slice(
     res = ""
     beg_idx = 0
     end_idx = 0
+    if not isinstance(text, str):
+        if isinstance(text, (int, float)):
+            align = "r"
+        text = str(text)
     for ch in text:
         end_idx = beg_idx + chars_len(ch)
         if beg_idx >= beg and end_idx <= end:

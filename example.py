@@ -186,6 +186,8 @@ def test_align_dict_list():
             "sub3": ["a", "abc", "gh", "jkl", "qerq"],
             "sub4": ["x", "ef", "i", "mkns", "adfa"],
         },
+        "bools1": [True, False, True, False, True],
+        "bools2": [False, True, False, True, True],
     }
     print(dict_to_str(data, align_list=True))
 
