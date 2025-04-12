@@ -8,6 +8,7 @@ from .times import Runtimer, unify_ts_and_str
 from .structures import CaseInsensitiveDict, dict_get, dict_set
 from .envs import OSEnver, shell_cmd
 from .maths import int_bits, max_key_len, chars_len
+from .maths import to_digits, get_by_threshold
 from .formats import DictStringifier, dict_to_str
 from .files import FileLogger
 from .bars import TCLogbar, TCLogbarGroup
