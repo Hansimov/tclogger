@@ -36,6 +36,7 @@ from tclogger import FileLogger
 from tclogger import TCLogbar, TCLogbarGroup
 from tclogger import brk, brc, brp
 from tclogger import int_bits, max_key_len, chars_len
+from tclogger import to_digits, get_by_threshold
 from tclogger import chars_slice
 from tclogger import attrs_to_dict
 
@@ -203,6 +204,8 @@ def test_align_dict_list():
             "sub3": ["a", "abc", "gh", "jkl", "qerq"],
             "sub4": ["x", "ef", "i", "mkns", "adfa"],
         },
+        "bools1": [True, False, True, False, True],
+        "bools2": [False, True, False, True, True],
     }
     print(dict_to_str(data, align_list=True))
 
@@ -318,6 +321,34 @@ def test_math():
         logger.note(f"{text_str} : {text_len_str}")
 
 
+def test_get_by_threshold():
+    d = {4: 40, "3.2": 30, 1: 10, 2: 20}
+    sorted_items = sorted(d.items(), key=lambda item: to_digits(item[0]))
+    logger.mesg(dict_to_str(sorted_items))
+
+    logger.note(f"key, 3.5, upper_bound")
+    result = get_by_threshold(d, threshold=3.5, direction="upper_bound", target="key")
+    print(result)  # (3.2, 30)
+
+    logger.note(f"value, 25, upper_bound")
+    result = get_by_threshold(
+        sorted_items, threshold=25, direction="upper_bound", target="value"
+    )
+    print(result)  # (2, 20)
+
+    logger.note("key, 3.5, lower_bound")
+    result = get_by_threshold(
+        sorted_items, threshold=3.5, direction="lower_bound", target="key"
+    )
+    print(result)  # (4, 40)
+
+    logger.note("value, 10, upper_bound")
+    result = get_by_threshold(
+        sorted_items, threshold=10, direction="upper_bound", target="value"
+    )
+    print(result)  # (1, 10)
+
+
 def test_str_slice():
     texts = ["你好我是小明", "Hello", 12345789, "你好，世界！", "Hello, World!", "XX"]
     beg, end = 1, 8
@@ -390,6 +421,7 @@ if __name__ == "__main__":
     test_logbar_verbose()
     test_decorations()
     test_math()
+    test_get_by_threshold()
     test_str_slice()
     test_temp_indent()
     test_attrs_to_dict()
