@@ -64,7 +64,7 @@ def get_by_threshold(
         - target: "key" or "value", which to sort and compare against the threshold.
 
     return:
-        - tuple (key, value); if no such entry exists, returns None
+        - tuple (key, value); if no such entry exists, return (None, None)
     """
     # unify to list of tuples
     if isinstance(d, dict):
@@ -84,7 +84,7 @@ def get_by_threshold(
         else:  # target == "value"
             sorted_items = sorted(items, key=lambda item: item[1])
     # Based on direction, filter the sorted items.
-    last_item = None
+    last_item = (None, None)
     if direction == "upper_bound":
         for item in sorted_items:
             if target == "key":
