@@ -4,8 +4,19 @@ Python terminal colored logger
 ![](https://img.shields.io/pypi/v/tclogger?label=tclogger&color=blue&cacheSeconds=60)
 
 ## Install
+
+By default, this package has no third-party dependencies, so you can feel free to install it with:
+
 ```sh
 pip install tclogger --upgrade
+```
+
+Also, you could install with all optional dependencies for some advanced features:
+
+- `rapidfuzz`: fuzzy matching
+
+```sh
+pip install tclogger[all] --upgrade
 ```
 
 ## Usage
