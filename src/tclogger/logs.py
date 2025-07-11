@@ -1,53 +1,9 @@
-"""Logger utils"""
-
 import functools
 import inspect
 import logging
-import shutil
 
-from .colors import colored, decolored, COLOR_TYPE
-
-
-def add_fillers(
-    text: str,
-    filler: str = "=",
-    fill_side: str = "both",
-    is_text_colored: bool = False,
-    fill_color: COLOR_TYPE = None,
-):
-    terminal_width = shutil.get_terminal_size().columns
-    if not text:
-        filled_str = colored(filler * terminal_width, color=fill_color)
-        return filled_str
-    text = text.strip()
-    if is_text_colored:
-        text_width = len(decolored(text))
-    else:
-        text_width = len(text)
-    if text_width >= terminal_width:
-        return text
-
-    if fill_side[0].lower() == "b":
-        leading_fill_str = filler * ((terminal_width - text_width) // 2 - 1) + " "
-        trailing_fill_str = " " + filler * (
-            terminal_width - text_width - len(leading_fill_str) - 1
-        )
-    elif fill_side[0].lower() == "l":
-        leading_fill_str = filler * (terminal_width - text_width - 1) + " "
-        trailing_fill_str = ""
-    elif fill_side[0].lower() == "r":
-        leading_fill_str = ""
-        trailing_fill_str = " " + filler * (terminal_width - text_width - 1)
-    else:
-        raise ValueError("Invalid fill_side")
-
-    if fill_color:
-        leading_fill_str = colored(leading_fill_str, color=fill_color)
-        trailing_fill_str = colored(trailing_fill_str, color=fill_color)
-
-    filled_str = f"{leading_fill_str}{text}{trailing_fill_str}"
-    return filled_str
-
+from .colors import colored
+from .fills import add_fills
 
 LOG_METHOD_COLORS = {
     "err": ("error", "red"),
@@ -241,7 +197,7 @@ class TCLogger(logging.Logger):
         indented_msg = "\n".join([indent_str + line for line in msg_str.split("\n")])
 
         if fill:
-            indented_msg = add_fillers(indented_msg, fill_side=fill_side)
+            indented_msg = add_fills(indented_msg, fill_side=fill_side)
 
         handler = self.handlers[0]
         handler.terminator = end

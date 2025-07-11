@@ -1,5 +1,6 @@
 from .colors import colored, decolored
-from .logs import TCLogger, logger, TCLogstr, logstr, add_fillers
+from .logs import TCLogger, logger, TCLogstr, logstr
+from .fills import add_fills
 from .times import get_now, get_now_ts, get_now_str, get_now_ts_str
 from .times import TIMEZONE, set_timezone, tcdatetime
 from .times import ts_to_str, str_to_ts, str_to_t

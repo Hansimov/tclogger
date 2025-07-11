@@ -6,7 +6,7 @@ from typing import Literal, Union
 from zoneinfo import ZoneInfo
 
 from .colors import colored
-from .logs import logger, add_fillers
+from .logs import logger, add_fills
 
 TIMEZONE = "Asia/Shanghai"
 
@@ -195,7 +195,7 @@ class Runtimer:
             fill_color = "light_magenta"
         time_str = colored(f"{time_types[time_type]} time: [ {t_str} ]", time_color)
 
-        filled_time_str = add_fillers(
+        filled_time_str = add_fills(
             time_str,
             filler="=",
             fill_side="both",
