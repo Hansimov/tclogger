@@ -26,7 +26,7 @@ from datetime import timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from tclogger import TCLogger, logger, TCLogstr, logstr, colored, decolored
+from tclogger import TCLogger, logger, TCLogstr, logstr, colored, decolored, add_fills
 from tclogger import Runtimer, OSEnver, shell_cmd
 from tclogger import get_now_ts, get_now_str, get_now_ts_str
 from tclogger import TIMEZONE, set_timezone, tcdatetime
@@ -50,6 +50,15 @@ def test_logger_verbose():
     logger.verbose = True
     logger.set_indent(2)
     logger.success("You should see this message, with indent")
+
+
+def test_fillers():
+    fill_str = add_fills()
+    logger.note(fill_str)
+    fill_str = add_fills(text="hello", filler="= ")
+    logger.okay(fill_str)
+    fill_str = add_fills(filler="- = ")
+    logger.mesg(fill_str)
 
 
 def test_run_timer_and_logger():
@@ -405,6 +414,7 @@ def test_attrs_to_dict():
 
 if __name__ == "__main__":
     test_logger_verbose()
+    test_fillers()
     test_run_timer_and_logger()
     test_now_and_timezone()
     test_dt_to_str()
