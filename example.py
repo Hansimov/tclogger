@@ -22,6 +22,7 @@ from tclogger import int_bits, max_key_len, chars_len
 from tclogger import to_digits, get_by_threshold
 from tclogger import chars_slice
 from tclogger import attrs_to_dict
+from tclogger import match_val
 
 
 def test_logger_verbose():
@@ -395,6 +396,20 @@ def test_attrs_to_dict():
     logger.mesg(dict_to_str(obj_attrs_dict), indent=2)
 
 
+def test_match_val():
+    val = "hello"
+    vals = ["hallo", "Hello", "hello"]
+    closest_val, closest_idx, max_score = match_val(val, vals)
+    logger.note(f"  * {closest_val} (index: {closest_idx}, score: {max_score})")
+
+    val2 = "new york"
+    vals2 = ["new yor", "newyork", "new yorx", "new  yorkz"]
+    closest_val, closest_idx, max_score = match_val(
+        val2, vals2, spaces_to="merge", use_fuzz=True
+    )
+    logger.note(f"  * {closest_val} (index: {closest_idx}, score: {max_score})")
+
+
 if __name__ == "__main__":
     test_logger_verbose()
     test_fillers()
@@ -418,5 +433,6 @@ if __name__ == "__main__":
     test_str_slice()
     test_temp_indent()
     test_attrs_to_dict()
+    test_match_val()
 
     # python example.py
