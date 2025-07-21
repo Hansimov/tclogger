@@ -42,9 +42,9 @@ def match_val(
         xvals = [v.lower() for v in xvals]
 
     if use_fuzz:
-        scores = [fuzz.ratio(val, v) / 100.0 for v in xvals]
+        scores = [fuzz.ratio(xval, v) / 100.0 for v in xvals]
     else:
-        scores = [1 if val == v else 0 for v in xvals]
+        scores = [1 if xval == v else 0 for v in xvals]
 
     midx, max_score = None, 0.0
     for i, s in enumerate(scores):
