@@ -6,7 +6,7 @@ from .times import TIMEZONE, set_timezone, tcdatetime
 from .times import ts_to_str, str_to_ts, str_to_t
 from .times import t_to_str, t_to_ts, dt_to_sec, dt_to_str
 from .times import Runtimer, unify_ts_and_str
-from .structures import CaseInsensitiveDict, dict_get, dict_set
+from .dicts import CaseInsensitiveDict, dict_get, dict_set
 from .jsons import JsonParser
 from .envs import OSEnver, shell_cmd
 from .maths import int_bits, max_key_len, chars_len

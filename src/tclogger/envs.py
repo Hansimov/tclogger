@@ -8,7 +8,7 @@ from pathlib import Path
 
 from .colors import colored
 from .logs import logger
-from .structures import CaseInsensitiveDict
+from .dicts import CaseInsensitiveDict
 
 
 class OSEnver:
