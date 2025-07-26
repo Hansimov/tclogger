@@ -106,6 +106,7 @@ def match_key(
     xkey = unify_key_to_str(key, **unify_params)
     xpattern = unify_key_to_str(pattern, **unify_params)
     if use_regex:
-        return re.match(xpattern, xkey) is not None
+        xpattern = rf"{xpattern}$"
+        return re.search(xpattern, xkey) is not None
     else:
         return xkey == xpattern
