@@ -22,7 +22,7 @@ from tclogger import int_bits, max_key_len, chars_len
 from tclogger import to_digits, get_by_threshold
 from tclogger import chars_slice
 from tclogger import attrs_to_dict
-from tclogger import match_val
+from tclogger import match_val, match_key
 
 
 def test_logger_verbose():
@@ -410,6 +410,35 @@ def test_match_val():
     logger.note(f"  * {closest_val} (index: {closest_idx}, score: {max_score})")
 
 
+def test_match_key():
+    def log_key_pattern(key, pattern, is_matched: bool):
+        msg = f"{brk(key)} - {pattern}"
+        if is_matched:
+            mark = "✓ "
+            logger.okay(mark + msg)
+        else:
+            mark = "× "
+            logger.warn(mark + msg)
+
+    k11 = "hello.world"
+    k12 = "Hello.World"
+    k13 = ["hello", "world"]
+
+    p11 = "hello.world"
+    p12 = ["hello", "world"]
+
+    for k in [k11, k12, k13]:
+        for p in [p11, p12]:
+            log_key_pattern(k, p, match_key(k, p, ignore_case=True))
+
+    k21 = "my.stared.works"
+    p21 = ["my", "stared.works"]
+    p22 = ["my", "Stared", "works"]  # False
+    for k in [k21]:
+        for p in [p21, p22]:
+            log_key_pattern(k, p, match_key(k, p, ignore_case=False))
+
+
 if __name__ == "__main__":
     test_logger_verbose()
     test_fillers()
@@ -434,5 +463,6 @@ if __name__ == "__main__":
     test_temp_indent()
     test_attrs_to_dict()
     test_match_val()
+    test_match_key()
 
     # python example.py

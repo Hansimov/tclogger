@@ -2,7 +2,16 @@ import re
 
 from copy import deepcopy
 from rapidfuzz import fuzz
-from typing import Literal
+from typing import Literal, Union, Protocol
+
+KeyType = Union[str, int, list[Union[str, int]]]
+
+
+class MatchFuncType(Protocol):
+
+    def __call__(self, key: KeyType, pattern: KeyType, **kwargs) -> bool:
+        """Match key with pattern."""
+        ...
 
 
 def match_val(
@@ -56,3 +65,47 @@ def match_val(
     else:
         mval = vals[midx]
     return mval, midx, max_score
+
+
+def unify_key_to_list(
+    key: KeyType, ignore_case: bool = False, sep: str = "."
+) -> list[Union[str, int]]:
+    xkey = deepcopy(key)
+    if isinstance(xkey, str):
+        # split "a.b.c" to ["a", "b", "c"]
+        xkey = xkey.split(sep)
+    elif isinstance(xkey, (list, tuple)):
+        # split case like ["a.b", "c"]
+        xkey = [k.split(sep) if isinstance(k, str) else k for k in xkey]
+        xkey = [item for sublist in xkey for item in sublist]
+    if ignore_case:
+        xkey = [k.lower() if isinstance(k, str) else k for k in xkey]
+    return xkey
+
+
+def unify_key_to_str(key: KeyType, ignore_case: bool = False, sep: str = ".") -> str:
+    """Compared to `unitfy_key_to_list()`, this would enable match_key to accept str-format list idx in as key part.
+    This means that "a.0.x" is same to ["a", 0, "x"] and ["a", "0", "x"].
+    """
+    xkey = deepcopy(key)
+    if isinstance(xkey, (list, tuple)):
+        xkey = sep.join(str(k) for k in xkey)
+    if ignore_case:
+        xkey = xkey.lower()
+    return xkey
+
+
+def match_key(
+    key: KeyType,
+    pattern: KeyType,
+    ignore_case: bool = False,
+    use_regex: bool = False,
+    sep: str = ".",
+) -> bool:
+    unify_params = {"ignore_case": ignore_case, "sep": sep}
+    xkey = unify_key_to_str(key, **unify_params)
+    xpattern = unify_key_to_str(pattern, **unify_params)
+    if use_regex:
+        return re.match(xpattern, xkey) is not None
+    else:
+        return xkey == xpattern
