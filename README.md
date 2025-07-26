@@ -42,7 +42,8 @@ from tclogger import Runtimer, OSEnver, shell_cmd
 from tclogger import get_now_ts, get_now_str, get_now_ts_str
 from tclogger import TIMEZONE, set_timezone, tcdatetime
 from tclogger import ts_to_str, str_to_ts, dt_to_str, unify_ts_and_str
-from tclogger import CaseInsensitiveDict, dict_to_str, dict_get, dict_set
+from tclogger import CaseInsensitiveDict, dict_to_str
+from tclogger import dict_get, dict_set, dict_get_all, dict_set_all
 from tclogger import FileLogger
 from tclogger import TCLogbar, TCLogbarGroup
 from tclogger import brk, brc, brp
@@ -50,6 +51,7 @@ from tclogger import int_bits, max_key_len, chars_len
 from tclogger import to_digits, get_by_threshold
 from tclogger import chars_slice
 from tclogger import attrs_to_dict
+from tclogger import match_val, match_key
 
 
 def test_logger_verbose():
@@ -423,6 +425,73 @@ def test_attrs_to_dict():
     logger.mesg(dict_to_str(obj_attrs_dict), indent=2)
 
 
+def test_match_val():
+    val = "hello"
+    vals = ["hallo", "Hello", "hello"]
+    closest_val, closest_idx, max_score = match_val(val, vals)
+    logger.note(f"  * {closest_val} (index: {closest_idx}, score: {max_score})")
+
+    val2 = "new york"
+    vals2 = ["new yor", "newyork", "new yorx", "new  yorkz"]
+    closest_val, closest_idx, max_score = match_val(
+        val2, vals2, spaces_to="merge", use_fuzz=True
+    )
+    logger.note(f"  * {closest_val} (index: {closest_idx}, score: {max_score})")
+
+
+def test_match_key():
+    def log_key_pattern(key, pattern, is_matched: bool):
+        msg = f"{brk(key)} - {pattern}"
+        if is_matched:
+            mark = "✓ "
+            logger.okay(mark + msg)
+        else:
+            mark = "× "
+            logger.warn(mark + msg)
+
+    k11 = "hello.world"
+    k12 = "Hello.World"
+    k13 = ["hello", "world"]
+
+    p11 = "hello.world"
+    p12 = ["hello", "world"]
+
+    for k in [k11, k12, k13]:
+        for p in [p11, p12]:
+            log_key_pattern(k, p, match_key(k, p, ignore_case=True))
+
+    k21 = "my.stared.works"
+    p21 = ["my", "stared.works"]
+    p22 = ["my", "Stared", "works"]  # False
+    for k in [k21]:
+        for p in [p21, p22]:
+            log_key_pattern(k, p, match_key(k, p, ignore_case=False))
+
+
+def test_dict_set_all():
+    d = {
+        "Hello": {"World": 1},
+        "names": [
+            {"first": "Alice", "last": "Smith"},
+            {"first": "Bob", "last": "Johnson"},
+        ],
+    }
+
+    logger.note(dict_to_str(d))
+
+    logger.note("> Set 'Hello.World' to 2")
+    dict_set_all(d, "Hello.World", 2)
+    logger.mesg(dict_to_str(d))
+
+    logger.note("> Set 'names.first' to 'Charlie'")
+    dict_set_all(d, "names.first", "Charlie")
+    logger.mesg(dict_to_str(d))
+
+    logger.note("> Set 'names.0.last' to 'Xiaoming'")
+    dict_set_all(d, "names.0.last", "Xiaoming", index_list=True)
+    logger.mesg(dict_to_str(d))
+
+
 if __name__ == "__main__":
     test_logger_verbose()
     test_fillers()
@@ -446,6 +515,9 @@ if __name__ == "__main__":
     test_str_slice()
     test_temp_indent()
     test_attrs_to_dict()
+    test_match_val()
+    test_match_key()
+    test_dict_set_all()
 
     # python example.py
 
