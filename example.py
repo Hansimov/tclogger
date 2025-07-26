@@ -14,7 +14,8 @@ from tclogger import Runtimer, OSEnver, shell_cmd
 from tclogger import get_now_ts, get_now_str, get_now_ts_str
 from tclogger import TIMEZONE, set_timezone, tcdatetime
 from tclogger import ts_to_str, str_to_ts, dt_to_str, unify_ts_and_str
-from tclogger import CaseInsensitiveDict, dict_to_str, dict_get, dict_set
+from tclogger import CaseInsensitiveDict, dict_to_str
+from tclogger import dict_get, dict_set, dict_get_all, dict_set_all
 from tclogger import FileLogger
 from tclogger import TCLogbar, TCLogbarGroup
 from tclogger import brk, brc, brp
@@ -439,6 +440,30 @@ def test_match_key():
             log_key_pattern(k, p, match_key(k, p, ignore_case=False))
 
 
+def test_dict_set_all():
+    d = {
+        "Hello": {"World": 1},
+        "names": [
+            {"first": "Alice", "last": "Smith"},
+            {"first": "Bob", "last": "Johnson"},
+        ],
+    }
+
+    logger.note(dict_to_str(d))
+
+    logger.note("> Set 'Hello.World' to 2")
+    dict_set_all(d, "Hello.World", 2)
+    logger.mesg(dict_to_str(d))
+
+    logger.note("> Set 'names.first' to 'Charlie'")
+    dict_set_all(d, "names.first", "Charlie")
+    logger.mesg(dict_to_str(d))
+
+    logger.note("> Set 'names.0.last' to 'Xiaoming'")
+    dict_set_all(d, "names.0.last", "Xiaoming", index_list=True)
+    logger.mesg(dict_to_str(d))
+
+
 if __name__ == "__main__":
     test_logger_verbose()
     test_fillers()
@@ -464,5 +489,6 @@ if __name__ == "__main__":
     test_attrs_to_dict()
     test_match_val()
     test_match_key()
+    test_dict_set_all()
 
     # python example.py

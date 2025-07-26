@@ -1,4 +1,7 @@
 from typing import Union
+from functools import partial
+
+from .matches import KeyType, MatchFuncType, match_key
 
 
 class CaseInsensitiveDict(dict):
@@ -52,7 +55,7 @@ class CaseInsensitiveDict(dict):
             self.__setitem__(k, v)
 
 
-def dict_get(d: dict, keys: Union[str, list[str]], default=None, sep: str = "."):
+def dict_get(d: dict, keys: KeyType, default=None, sep: str = "."):
     if isinstance(keys, str) and sep:
         keys = keys.split(sep)
     for key in keys:
@@ -63,7 +66,7 @@ def dict_get(d: dict, keys: Union[str, list[str]], default=None, sep: str = ".")
     return d
 
 
-def dict_set(d: dict, keys: Union[str, list[str]], value, sep: str = "."):
+def dict_set(d: dict, keys: KeyType, value, sep: str = "."):
     if isinstance(keys, str) and sep:
         keys = keys.split(sep)
     for key in keys[:-1]:
@@ -80,3 +83,95 @@ def dict_set(d: dict, keys: Union[str, list[str]], value, sep: str = "."):
         if keys[-1] >= len(d):
             d.extend([None for _ in range(keys[-1] - len(d) + 1)])
         d[keys[-1]] = value
+
+
+def dict_get_all(
+    d: Union[dict, list],
+    key: KeyType,
+    value,
+    ignore_case: bool = False,
+    use_regex: bool = False,
+    sep: str = ".",
+    index_list: bool = False,
+): ...
+
+
+def inner_dict_set_all(
+    d: Union[dict, list],
+    key: KeyType,
+    value,
+    index_list: bool,
+    keys_path: list,
+    match_func: MatchFuncType = match_key,
+):
+    """recursive helper function for `dict_set_all()`"""
+    if isinstance(d, dict):
+        for k, v in d.items():
+            new_keys_path = keys_path + [k]
+            if match_func(new_keys_path, key):
+                d[k] = value
+            if isinstance(v, (dict, list)):
+                inner_dict_set_all(
+                    v,
+                    key,
+                    value,
+                    index_list=index_list,
+                    keys_path=new_keys_path,
+                    match_func=match_func,
+                )
+
+    elif isinstance(d, list):
+        for idx, item in enumerate(d):
+            if index_list:
+                new_keys_path = keys_path + [idx]
+            else:
+                new_keys_path = keys_path
+
+            if match_func(new_keys_path, key):
+                d[idx] = value
+
+            if isinstance(item, (dict, list)):
+                inner_dict_set_all(
+                    item,
+                    key,
+                    value,
+                    index_list=index_list,
+                    keys_path=new_keys_path,
+                    match_func=match_func,
+                )
+
+
+def dict_set_all(
+    d: Union[dict, list],
+    key: KeyType,
+    value,
+    index_list: bool = False,
+    ignore_case: bool = False,
+    use_regex: bool = False,
+    sep: str = ".",
+):
+    """
+    Recursively replace values of all items with field `key` in a dict/list.
+    Args:
+    - d: input dict or list
+    - key: key (pattern) to match and set
+    - value: value to set for all matching keys
+    - ignore_case: ignore case of key when matching
+    - use_regex: use regex to match key
+    - sep: separator to use for chaining keys
+    - index_list: if True, include list indices in the keys path when matching
+    """
+    match_func = partial(
+        match_key,
+        ignore_case=ignore_case,
+        use_regex=use_regex,
+        sep=sep,
+    )
+    inner_dict_set_all(
+        d,
+        key,
+        value,
+        index_list=index_list,
+        keys_path=[],
+        match_func=match_func,
+    )
