@@ -24,6 +24,7 @@ from tclogger import to_digits, get_by_threshold
 from tclogger import chars_slice
 from tclogger import attrs_to_dict
 from tclogger import match_val, match_key, iterate_folder, match_paths
+from tclogger import copy_file, copy_file_relative, copy_folder
 
 
 def test_logger_verbose():
@@ -498,6 +499,18 @@ def test_iterate_folder():
     logger.mesg(dict_to_str(matched_paths, indent=2))
 
 
+def test_copy_folder():
+    copy_folder(
+        src_root=Path(__file__).parent,
+        dst_root=Path(__file__).parents[1] / "copy_test",
+        includes=["*.py", "*.md"],
+        excludes=["__init__.py", "example.py"],
+        use_gitignore=True,
+        confirm_before_copy=True,
+        confirm_before_remove=False,
+    )
+
+
 if __name__ == "__main__":
     test_logger_verbose()
     test_logger_level()
@@ -526,5 +539,6 @@ if __name__ == "__main__":
     test_match_key()
     test_dict_set_all()
     test_iterate_folder()
+    test_copy_folder()
 
     # python example.py

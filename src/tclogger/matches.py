@@ -243,8 +243,8 @@ def inner_iterate_folder(
 ) -> Iterator[tuple[PathType, bool]]:
     root = Path(root)
     if level == 0:
-        logger.note(f"> {root}", verbose=verbose)
-    with logger.temp_indent(indent):
+        logger.note(f"> {root}", verbose=verbose, indent=indent)
+    with logger.temp_indent(indent + 2):
         if root.is_file():
             yield from inner_yield_path_match(
                 root, match_bool=match_func(root), verbose=verbose
@@ -336,7 +336,6 @@ def match_paths(
 
     ```py
     {
-        "root": <root path>,
         "includes": <list of matched include paths>,
         "excludes": <list of matched exclude paths>,
     }
@@ -344,7 +343,6 @@ def match_paths(
     """
 
     res = {
-        "root": root,
         "includes": [],
         "excludes": [],
     }
@@ -364,7 +362,6 @@ def match_paths(
             res["excludes"].append(p)
 
     if to_str:
-        res["root"] = str(res["root"])
         res["includes"] = [str(p) for p in res["includes"]]
         res["excludes"] = [str(p) for p in res["excludes"]]
 
