@@ -51,7 +51,8 @@ from tclogger import int_bits, max_key_len, chars_len
 from tclogger import to_digits, get_by_threshold
 from tclogger import chars_slice
 from tclogger import attrs_to_dict
-from tclogger import match_val, match_key
+from tclogger import match_val, match_key, iterate_folder, match_paths
+from tclogger import copy_file, copy_file_relative, copy_folder
 
 
 def test_logger_verbose():
@@ -63,6 +64,20 @@ def test_logger_verbose():
     logger.verbose = True
     logger.set_indent(2)
     logger.success("You should see this message, with indent")
+
+
+def test_logger_level():
+    logger.note("This is a note message")
+    logger.warn("This is a warning message")
+    logger.enter_quiet(True)
+    logger.warn("You should not see this warning message")
+    print("You should see an error message below:")
+    logger.err("You should see this error message")
+    logger.set_level("warning")
+    print("Now the level is set to warning:")
+    logger.note("You should not see this note message")
+    logger.warn("You should see this warning message")
+    logger.exit_quiet(True)
 
 
 def test_fillers():
@@ -492,8 +507,41 @@ def test_dict_set_all():
     logger.mesg(dict_to_str(d))
 
 
+def test_iterate_folder():
+    root = Path(__file__).parent
+    includes = ["*.py", "*.md"]
+    excludes = ["__init__.py", "example.py"]
+
+    iterate_folder(
+        root, includes=includes, excludes=excludes, unmatch_bool=True, verbose=True
+    )
+    matched_paths = match_paths(
+        root,
+        includes=includes,
+        excludes=excludes,
+        unmatch_bool=True,
+        to_str=True,
+        verbose=True,
+    )
+
+    logger.mesg(dict_to_str(matched_paths, indent=2))
+
+
+def test_copy_folder():
+    copy_folder(
+        src_root=Path(__file__).parent,
+        dst_root=Path(__file__).parents[1] / "copy_test",
+        includes=["*.py", "*.md"],
+        excludes=["__init__.py", "example.py"],
+        use_gitignore=True,
+        confirm_before_copy=True,
+        confirm_before_remove=False,
+    )
+
+
 if __name__ == "__main__":
     test_logger_verbose()
+    test_logger_level()
     test_fillers()
     test_run_timer_and_logger()
     test_now_and_timezone()
@@ -518,6 +566,8 @@ if __name__ == "__main__":
     test_match_val()
     test_match_key()
     test_dict_set_all()
+    test_iterate_folder()
+    test_copy_folder()
 
     # python example.py
 
