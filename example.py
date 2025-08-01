@@ -23,7 +23,7 @@ from tclogger import int_bits, max_key_len, chars_len
 from tclogger import to_digits, get_by_threshold
 from tclogger import chars_slice
 from tclogger import attrs_to_dict
-from tclogger import match_val, match_key, iterate_folder
+from tclogger import match_val, match_key, iterate_folder, match_paths
 
 
 def test_logger_verbose():
@@ -472,6 +472,16 @@ def test_iterate_folder():
     iterate_folder(
         root, includes=includes, excludes=excludes, unmatch_bool=True, verbose=True
     )
+    matched_paths = match_paths(
+        root,
+        includes=includes,
+        excludes=excludes,
+        unmatch_bool=True,
+        to_str=True,
+        verbose=True,
+    )
+
+    logger.mesg(dict_to_str(matched_paths, indent=2))
 
 
 if __name__ == "__main__":
@@ -500,5 +510,6 @@ if __name__ == "__main__":
     test_match_val()
     test_match_key()
     test_dict_set_all()
+    test_iterate_folder()
 
     # python example.py

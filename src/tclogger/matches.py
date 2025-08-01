@@ -244,27 +244,7 @@ def inner_iterate_folder(
     verbose: bool = True,
     indent: int = 2,
     level: int = 0,
-) -> Iterator[tuple[bool, PathType]]:
-    """Iterate paths with includes and excludes.
-
-    Return dict with keys:
-
-    ```py
-    {
-        "includes": <list of matched include paths>,
-        "excludes": <list of matched exclude paths>,
-        "root": <root path>,
-    }
-    ```
-
-    Args:
-        - root: root path to traverse
-        - includes: list of patterns to include
-        - excludes: list of patterns to exclude
-        - ignore_case: ignore case when matching
-        - use_regex: use regex to match patterns
-    """
-
+) -> Iterator[tuple[PathType, bool]]:
     root = Path(root)
     if level == 0:
         logger.note(f"> {root}", verbose=verbose)
@@ -309,7 +289,18 @@ def iterate_folder(
     verbose: bool = True,
     indent: int = 2,
 ) -> Iterator[tuple[PathType, bool]]:
-    """Iterate paths with includes and excludes."""
+    """Iterate paths with includes and excludes.
+
+    Args:
+        - root: root path to traverse
+        - includes: list of patterns to include
+        - excludes: list of patterns to exclude
+        - unmatch_bool: default bool when path is not matched by neither includes nor excludes
+        - ignore_case: ignore case when matching
+        - use_gitignore: whether to add .gitignore to excludes
+        - verbose: whether to log process
+        - indent: logging indent spaces
+    """
     includes, excludes = unify_includes_excludes(
         root, includes=includes, excludes=excludes, use_gitignore=use_gitignore
     )
@@ -320,10 +311,65 @@ def iterate_folder(
         unmatch_bool=unmatch_bool,
         ignore_case=ignore_case,
     )
-    for p in inner_iterate_folder(
+    for p, match_bool in inner_iterate_folder(
         root,
         match_func=match_func,
         verbose=verbose,
         indent=indent,
     ):
-        pass
+        yield p, match_bool
+
+
+def match_paths(
+    root: PathType = ".",
+    includes: StrsType = None,
+    excludes: StrsType = None,
+    unmatch_bool: bool = True,
+    ignore_case: bool = True,
+    use_gitignore: bool = True,
+    to_str: bool = True,
+    verbose: bool = True,
+    indent: int = 2,
+) -> dict:
+    """Match paths in a folder with includes and excludes.
+    Args:
+        - to_str: whether to convert paths to str in result
+        - See `iterate_folder()` for other arguments.
+
+    Return dict with keys:
+
+    ```py
+    {
+        "root": <root path>,
+        "includes": <list of matched include paths>,
+        "excludes": <list of matched exclude paths>,
+    }
+    ```
+    """
+
+    res = {
+        "root": root,
+        "includes": [],
+        "excludes": [],
+    }
+    for p, match_bool in iterate_folder(
+        root,
+        includes=includes,
+        excludes=excludes,
+        unmatch_bool=unmatch_bool,
+        ignore_case=ignore_case,
+        use_gitignore=use_gitignore,
+        verbose=verbose,
+        indent=indent,
+    ):
+        if match_bool:
+            res["includes"].append(p)
+        else:
+            res["excludes"].append(p)
+
+    if to_str:
+        res["root"] = str(res["root"])
+        res["includes"] = [str(p) for p in res["includes"]]
+        res["excludes"] = [str(p) for p in res["excludes"]]
+
+    return res
