@@ -1,5 +1,4 @@
 import functools
-import inspect
 import logging
 
 from .colors import colored
@@ -105,9 +104,7 @@ class TCLogger(logging.Logger):
 
     def __init__(self, name=None, prefix=False, verbose: bool = True):
         if not name:
-            frame = inspect.stack()[1]
-            module = inspect.getmodule(frame[0])
-            name = module.__name__
+            name = "TCLogger"
 
         super().__init__(name)
         self.setLevel(logging.INFO)
@@ -158,7 +155,7 @@ class TCLogger(logging.Logger):
         self.set_level(self.log_level)
 
     def quiet(self):
-        self.set_level("critical")
+        self.set_level("error")
 
     def enter_quiet(self, quiet=False):
         if quiet:

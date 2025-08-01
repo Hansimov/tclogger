@@ -1,8 +1,9 @@
 import threading
 
 from pathlib import Path
-from tclogger import get_now_str
 from typing import Literal, Union
+
+from .times import get_now_str
 
 
 MSG_PREFIXES = {"note": ">", "error": "×", "success": "√"}

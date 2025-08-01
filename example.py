@@ -37,6 +37,20 @@ def test_logger_verbose():
     logger.success("You should see this message, with indent")
 
 
+def test_logger_level():
+    logger.note("This is a note message")
+    logger.warn("This is a warning message")
+    logger.enter_quiet(True)
+    logger.warn("You should not see this warning message")
+    print("You should see an error message below:")
+    logger.err("You should see this error message")
+    logger.set_level("warning")
+    print("Now the level is set to warning:")
+    logger.note("You should not see this note message")
+    logger.warn("You should see this warning message")
+    logger.exit_quiet(True)
+
+
 def test_fillers():
     fill_str = add_fills()
     logger.note(fill_str)
@@ -486,6 +500,7 @@ def test_iterate_folder():
 
 if __name__ == "__main__":
     test_logger_verbose()
+    test_logger_level()
     test_fillers()
     test_run_timer_and_logger()
     test_now_and_timezone()
