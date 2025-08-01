@@ -18,4 +18,4 @@ from .decorations import brk, brc, brp
 from .strings import chars_slice
 from .attrs import attrs_to_dict
 from .matches import match_val, match_key, iterate_folder, match_paths
-from .confirm import confirm_input
+from .confirms import confirm_input

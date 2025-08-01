@@ -8,18 +8,14 @@ from rapidfuzz import fuzz
 from typing import Literal, Union, Protocol, Iterator
 
 from .logs import TCLogger
+from .types import KeysType, StrsType, PathType, PathsType
 
 logger = TCLogger()
-
-KeyType = Union[str, int, list[Union[str, int]]]
-PathType = Union[str, Path]
-PathsType = Union[PathType, list[PathType]]
-StrsType = Union[str, list[str]]
 
 
 class MatchFuncType(Protocol):
 
-    def __call__(self, key: KeyType, pattern: KeyType, **kwargs) -> bool:
+    def __call__(self, key: KeysType, pattern: KeysType, **kwargs) -> bool:
         """Match key with pattern."""
         ...
 
@@ -78,7 +74,7 @@ def match_val(
 
 
 def unify_key_to_list(
-    key: KeyType, ignore_case: bool = False, sep: str = "."
+    key: KeysType, ignore_case: bool = False, sep: str = "."
 ) -> list[Union[str, int]]:
     xkey = deepcopy(key)
     if isinstance(xkey, str):
@@ -93,7 +89,7 @@ def unify_key_to_list(
     return xkey
 
 
-def unify_key_to_str(key: KeyType, ignore_case: bool = False, sep: str = ".") -> str:
+def unify_key_to_str(key: KeysType, ignore_case: bool = False, sep: str = ".") -> str:
     """Compared to `unitfy_key_to_list()`, this would enable match_key to accept str-format list idx in as key part.
     This means that "a.0.x" is same to ["a", 0, "x"] and ["a", "0", "x"].
     """
@@ -106,8 +102,8 @@ def unify_key_to_str(key: KeyType, ignore_case: bool = False, sep: str = ".") ->
 
 
 def match_key(
-    key: KeyType,
-    pattern: KeyType,
+    key: KeysType,
+    pattern: KeysType,
     ignore_case: bool = False,
     use_regex: bool = False,
     sep: str = ".",

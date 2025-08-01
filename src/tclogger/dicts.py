@@ -1,7 +1,8 @@
 from typing import Union
 from functools import partial
 
-from .matches import KeyType, MatchFuncType, match_key
+from .types import KeysType
+from .matches import MatchFuncType, match_key
 
 
 class CaseInsensitiveDict(dict):
@@ -55,7 +56,7 @@ class CaseInsensitiveDict(dict):
             self.__setitem__(k, v)
 
 
-def dict_get(d: dict, keys: KeyType, default=None, sep: str = "."):
+def dict_get(d: dict, keys: KeysType, default=None, sep: str = "."):
     if isinstance(keys, str) and sep:
         keys = keys.split(sep)
     for key in keys:
@@ -66,7 +67,7 @@ def dict_get(d: dict, keys: KeyType, default=None, sep: str = "."):
     return d
 
 
-def dict_set(d: dict, keys: KeyType, value, sep: str = "."):
+def dict_set(d: dict, keys: KeysType, value, sep: str = "."):
     if isinstance(keys, str) and sep:
         keys = keys.split(sep)
     for key in keys[:-1]:
@@ -87,7 +88,7 @@ def dict_set(d: dict, keys: KeyType, value, sep: str = "."):
 
 def dict_get_all(
     d: Union[dict, list],
-    key: KeyType,
+    key: KeysType,
     value,
     ignore_case: bool = False,
     use_regex: bool = False,
@@ -98,7 +99,7 @@ def dict_get_all(
 
 def inner_dict_set_all(
     d: Union[dict, list],
-    key: KeyType,
+    key: KeysType,
     value,
     index_list: bool,
     keys_path: list,
@@ -143,7 +144,7 @@ def inner_dict_set_all(
 
 def dict_set_all(
     d: Union[dict, list],
-    key: KeyType,
+    key: KeysType,
     value,
     index_list: bool = False,
     ignore_case: bool = False,
