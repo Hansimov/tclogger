@@ -17,5 +17,5 @@ from .bars import TCLogbar, TCLogbarGroup
 from .decorations import brk, brc, brp
 from .strings import chars_slice
 from .attrs import attrs_to_dict
-from .matches import match_val, match_key
+from .matches import match_val, match_key, iterate_folder
 from .confirm import confirm_input

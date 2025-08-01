@@ -23,7 +23,7 @@ from tclogger import int_bits, max_key_len, chars_len
 from tclogger import to_digits, get_by_threshold
 from tclogger import chars_slice
 from tclogger import attrs_to_dict
-from tclogger import match_val, match_key
+from tclogger import match_val, match_key, iterate_folder
 
 
 def test_logger_verbose():
@@ -462,6 +462,16 @@ def test_dict_set_all():
     logger.note("> Set 'names.0.last' to 'Xiaoming'")
     dict_set_all(d, "names.0.last", "Xiaoming", index_list=True)
     logger.mesg(dict_to_str(d))
+
+
+def test_iterate_folder():
+    root = Path(__file__).parent
+    includes = ["*.py", "*.md"]
+    excludes = ["__init__.py", "example.py"]
+
+    iterate_folder(
+        root, includes=includes, excludes=excludes, unmatch_bool=True, verbose=True
+    )
 
 
 if __name__ == "__main__":

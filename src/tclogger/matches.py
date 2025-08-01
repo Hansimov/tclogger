@@ -1,10 +1,20 @@
+import os
 import re
 
 from copy import deepcopy
+from functools import partial
+from pathlib import Path
 from rapidfuzz import fuzz
-from typing import Literal, Union, Protocol
+from typing import Literal, Union, Protocol, Iterator
+
+from .logs import TCLogger
+
+logger = TCLogger()
 
 KeyType = Union[str, int, list[Union[str, int]]]
+PathType = Union[str, Path]
+PathsType = Union[PathType, list[PathType]]
+StrsType = Union[str, list[str]]
 
 
 class MatchFuncType(Protocol):
@@ -110,3 +120,210 @@ def match_key(
         return re.search(xpattern, xkey) is not None
     else:
         return xkey == xpattern
+
+
+class MatchPathFuncType(Protocol):
+    def __call__(
+        self, path: PathType, includes: StrsType, excludes: StrsType, **kwargs
+    ) -> bool:
+        """Match path with includes and excludes."""
+        ...
+
+
+def unify_paths(paths: PathsType) -> list[PathType]:
+    """Unify paths to a list of Path objects."""
+    if not paths:
+        return []
+    if isinstance(paths, (str, Path)):
+        paths = [paths]
+    return paths
+
+
+def patternize_path(path: str) -> str:
+    path = path.strip()
+    # ignore comment lines
+    if path.startswith("#"):
+        return ""
+    if path:
+        # replace * to .*, and . (not ends with *) to \.
+        path = re.sub(r"\*", ".*", path.strip())
+        path = re.sub(r"\.(?!\*)", r"\.", path)
+        # if not starts with /, prepend .*/
+        if not path.startswith("/"):
+            path = f".*/{path}"
+        # remove trailing slashes
+        path = path.rstrip("/")
+    return path
+
+
+def get_gitignore_patterns(root: PathType) -> list[str]:
+    """Load .gitignore patterns.
+    NOTE: Currently only covers .gitignore **under root**,
+    and would support sub-directories in the future.
+    """
+    res = [".git"]
+    path = Path(root) / ".gitignore"
+    if path.exists():
+        with path.open() as f:
+            lines = f.read().splitlines()
+        lines = [l.strip() for l in lines if l.strip() and not l.startswith("#")]
+        res.extend(lines)
+    return res
+
+
+def unify_includes_excludes(
+    root: PathType = ".",
+    includes: StrsType = None,
+    excludes: StrsType = None,
+    use_gitignore: bool = True,
+) -> tuple[list[str], list[str]]:
+    """Unify includes and excludes to list of strs."""
+    includes = unify_paths(includes)
+    excludes = unify_paths(excludes)
+    if use_gitignore:
+        gitignore_patterns = get_gitignore_patterns(root)
+        excludes.extend(gitignore_patterns)
+    includes = [patternize_path(p) for p in includes]
+    excludes = [patternize_path(p) for p in excludes]
+    includes = [p for p in includes if p]
+    excludes = [p for p in excludes if p]
+    return includes, excludes
+
+
+def match_path(
+    path: PathType,
+    includes: StrsType = None,
+    excludes: StrsType = None,
+    unmatch_bool: bool = True,
+    ignore_case: bool = True,
+) -> bool:
+    if not includes and not excludes:
+        return False
+
+    re_flag = 0
+    if ignore_case:
+        re_flag = re.IGNORECASE
+
+    if excludes:
+        for exclude_pattern in excludes:
+            if re.search(rf"{exclude_pattern}$", str(path), flags=re_flag):
+                return False
+
+    if includes:
+        for include_pattern in includes:
+            if re.search(rf"{include_pattern}$", str(path), flags=re_flag):
+                return True
+
+    # When program reaches here,
+    # it means both includes and excludes are not matched
+
+    # if includes is provided while excludes not, then unmatch means False
+    if includes and not excludes:
+        return False
+    # if excludes is provided while includes not, then unmatch means True
+    if excludes and not includes:
+        return True
+    # if both are provided, return unmatch_bool
+    return unmatch_bool
+
+
+def inner_yield_path_match(
+    path: PathType, match_bool: bool, verbose: bool = True
+) -> Iterator[tuple[PathType, bool]]:
+    if match_bool:
+        logger.file(f"+ {path}", verbose=verbose)
+        yield path, True
+    else:
+        logger.warn(f"- {path}", verbose=verbose)
+        yield path, False
+
+
+def inner_iterate_folder(
+    root: PathType = ".",
+    match_func: MatchPathFuncType = match_path,
+    verbose: bool = True,
+    indent: int = 2,
+    level: int = 0,
+) -> Iterator[tuple[bool, PathType]]:
+    """Iterate paths with includes and excludes.
+
+    Return dict with keys:
+
+    ```py
+    {
+        "includes": <list of matched include paths>,
+        "excludes": <list of matched exclude paths>,
+        "root": <root path>,
+    }
+    ```
+
+    Args:
+        - root: root path to traverse
+        - includes: list of patterns to include
+        - excludes: list of patterns to exclude
+        - ignore_case: ignore case when matching
+        - use_regex: use regex to match patterns
+    """
+
+    root = Path(root)
+    if level == 0:
+        logger.note(f"> {root}", verbose=verbose)
+    with logger.temp_indent(indent):
+        if root.is_file():
+            yield from inner_yield_path_match(
+                root, match_bool=match_func(root), verbose=verbose
+            )
+        for p in os.listdir(root):
+            p = Path(root) / p
+            if p.is_file():
+                yield from inner_yield_path_match(
+                    p, match_bool=match_func(p), verbose=verbose
+                )
+            elif p.is_dir():
+                match_bool = match_func(p)
+                if match_bool:
+                    logger.note(f"> {p}", verbose=verbose)
+                    yield from inner_iterate_folder(
+                        p,
+                        match_func=match_func,
+                        verbose=verbose,
+                        indent=indent + 2,
+                        level=level + 1,
+                    )
+                else:
+                    yield from inner_yield_path_match(
+                        p, match_bool=match_bool, verbose=verbose
+                    )
+            else:
+                logger.warn(f"* skip: {p}", verbose=verbose)
+                pass
+
+
+def iterate_folder(
+    root: PathType = ".",
+    includes: StrsType = None,
+    excludes: StrsType = None,
+    unmatch_bool: bool = True,
+    ignore_case: bool = True,
+    use_gitignore: bool = True,
+    verbose: bool = True,
+    indent: int = 2,
+) -> Iterator[tuple[PathType, bool]]:
+    """Iterate paths with includes and excludes."""
+    includes, excludes = unify_includes_excludes(
+        root, includes=includes, excludes=excludes, use_gitignore=use_gitignore
+    )
+    match_func = partial(
+        match_path,
+        includes=includes,
+        excludes=excludes,
+        unmatch_bool=unmatch_bool,
+        ignore_case=ignore_case,
+    )
+    for p in inner_iterate_folder(
+        root,
+        match_func=match_func,
+        verbose=verbose,
+        indent=indent,
+    ):
+        pass
