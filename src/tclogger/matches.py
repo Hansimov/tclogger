@@ -13,13 +13,6 @@ from .types import KeysType, StrsType, PathType, PathsType
 logger = TCLogger()
 
 
-class MatchFuncType(Protocol):
-
-    def __call__(self, key: KeysType, pattern: KeysType, **kwargs) -> bool:
-        """Match key with pattern."""
-        ...
-
-
 def match_val(
     val: str,
     vals: list[str],
@@ -71,6 +64,12 @@ def match_val(
     else:
         mval = vals[midx]
     return mval, midx, max_score
+
+
+class MatchKeyFuncType(Protocol):
+    def __call__(self, key: KeysType, pattern: KeysType, **kwargs) -> bool:
+        """Match key with pattern."""
+        ...
 
 
 def unify_key_to_list(
@@ -223,17 +222,6 @@ def match_path(
     return unmatch_bool
 
 
-def inner_yield_path_match(
-    path: PathType, match_bool: bool, verbose: bool = True
-) -> Iterator[tuple[PathType, bool]]:
-    if match_bool:
-        logger.file(f"+ {path}", verbose=verbose)
-        yield path, True
-    else:
-        logger.warn(f"- {path}", verbose=verbose)
-        yield path, False
-
-
 def inner_iterate_folder(
     root: PathType = ".",
     match_func: MatchPathFuncType = match_path,
@@ -246,17 +234,13 @@ def inner_iterate_folder(
         logger.note(f"> {root}", verbose=verbose, indent=indent)
     with logger.temp_indent(indent + 2):
         if root.is_file():
-            yield from inner_yield_path_match(
-                root, match_bool=match_func(root), verbose=verbose
-            )
+            yield root, match_func(root)
         for p in os.listdir(root):
             p = Path(root) / p
+            match_bool = match_func(p)
             if p.is_file():
-                yield from inner_yield_path_match(
-                    p, match_bool=match_func(p), verbose=verbose
-                )
+                yield p, match_bool
             elif p.is_dir():
-                match_bool = match_func(p)
                 if match_bool:
                     logger.note(f"> {p}", verbose=verbose)
                     yield from inner_iterate_folder(
@@ -267,9 +251,7 @@ def inner_iterate_folder(
                         level=level + 1,
                     )
                 else:
-                    yield from inner_yield_path_match(
-                        p, match_bool=match_bool, verbose=verbose
-                    )
+                    yield p, match_bool
             else:
                 logger.warn(f"* skip: {p}", verbose=verbose)
                 pass
@@ -296,6 +278,11 @@ def iterate_folder(
         - use_gitignore: whether to add .gitignore to excludes
         - verbose: whether to log process
         - indent: logging indent spaces
+
+    In a previous version, there are two more args:
+        - include_func: function to call when a path is included
+        - exclude_func: function to call when a path is excluded
+    These two args are removed, as this target could be reached more easily, by just iterate the iterator and operate on the yielded (path, match_bool) pairs.
     """
     includes, excludes = unify_includes_excludes(
         root, includes=includes, excludes=excludes, use_gitignore=use_gitignore
@@ -308,11 +295,12 @@ def iterate_folder(
         ignore_case=ignore_case,
     )
     for p, match_bool in inner_iterate_folder(
-        root,
-        match_func=match_func,
-        verbose=verbose,
-        indent=indent,
+        root, match_func=match_func, verbose=verbose, indent=indent
     ):
+        if match_bool:
+            logger.file(f"+ {p}", verbose=verbose)
+        if not match_bool:
+            logger.warn(f"- {p}", verbose=verbose)
         yield p, match_bool
 
 

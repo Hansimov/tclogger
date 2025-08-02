@@ -2,7 +2,7 @@ from typing import Union
 from functools import partial
 
 from .types import KeysType
-from .matches import MatchFuncType, match_key
+from .matches import MatchKeyFuncType, match_key
 
 
 class CaseInsensitiveDict(dict):
@@ -103,7 +103,7 @@ def inner_dict_set_all(
     value,
     index_list: bool,
     keys_path: list,
-    match_func: MatchFuncType = match_key,
+    match_func: MatchKeyFuncType = match_key,
 ):
     """recursive helper function for `dict_set_all()`"""
     if isinstance(d, dict):

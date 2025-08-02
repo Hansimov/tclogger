@@ -479,14 +479,11 @@ def test_dict_set_all():
     logger.mesg(dict_to_str(d))
 
 
-def test_iterate_folder():
+def test_match_paths():
     root = Path(__file__).parent
     includes = ["*.py", "*.md"]
     excludes = ["__init__.py", "example.py"]
 
-    iterate_folder(
-        root, includes=includes, excludes=excludes, unmatch_bool=True, verbose=True
-    )
     matched_paths = match_paths(
         root,
         includes=includes,
@@ -494,8 +491,8 @@ def test_iterate_folder():
         unmatch_bool=True,
         to_str=True,
         verbose=True,
+        indent=0,
     )
-
     logger.mesg(dict_to_str(matched_paths, indent=2))
 
 
@@ -538,7 +535,7 @@ if __name__ == "__main__":
     test_match_val()
     test_match_key()
     test_dict_set_all()
-    test_iterate_folder()
+    test_match_paths()
     test_copy_folder()
 
     # python example.py
