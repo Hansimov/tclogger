@@ -285,7 +285,7 @@ def inner_iterate_folder(
     indent: int = 2,
     level: int = 0,
 ) -> Iterator[tuple[PathType, bool]]:
-    root = Path(root)
+    root = Path(root).expanduser().resolve()
     if level == 0:
         logger.note(f"> {root}", verbose=verbose, indent=indent)
         temp_indent = indent + 2
@@ -302,6 +302,7 @@ def inner_iterate_folder(
             elif p.is_dir():
                 if match_bool:
                     logger.note(f"> {p}", verbose=verbose)
+                    yield p, match_bool
                     yield from inner_iterate_folder(
                         p,
                         match_func=match_func,
@@ -319,6 +320,7 @@ def iterate_folder(
     root: PathType = ".",
     includes: StrsType = None,
     excludes: StrsType = None,
+    yield_folder: bool = False,
     unmatch_bool: bool = True,
     ignore_case: bool = True,
     use_gitignore: bool = True,
@@ -355,10 +357,13 @@ def iterate_folder(
     for p, match_bool in inner_iterate_folder(
         root, match_func=match_func, verbose=verbose, indent=indent
     ):
-        if match_bool:
-            logger.file(f"+ {p}", verbose=verbose)
-        if not match_bool:
-            logger.warn(f"- {p}", verbose=verbose)
+        if not yield_folder and p.is_dir():
+            continue
+        if p.is_file():
+            if match_bool:
+                logger.file(f"+ {p}", verbose=verbose)
+            if not match_bool:
+                logger.warn(f"- {p}", verbose=verbose)
         yield p, match_bool
 
 
