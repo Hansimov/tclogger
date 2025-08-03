@@ -67,9 +67,13 @@ def match_val(
 
 
 class MatchKeyFuncType(Protocol):
-    def __call__(self, key: KeysType, pattern: KeysType, **kwargs) -> bool:
-        """Match key with pattern."""
-        ...
+    """Match key with pattern.
+
+    Cases:
+    - `match_key`: match key with pattern
+    """
+
+    def __call__(self, key: KeysType, pattern: KeysType, **kwargs) -> bool: ...
 
 
 def unify_key_to_list(
@@ -115,14 +119,6 @@ def match_key(
         return re.search(xpattern, xkey) is not None
     else:
         return xkey == xpattern
-
-
-class MatchPathFuncType(Protocol):
-    def __call__(
-        self, path: PathType, includes: StrsType, excludes: StrsType, **kwargs
-    ) -> bool:
-        """Match path with includes and excludes."""
-        ...
 
 
 def unify_paths(paths: PathsType) -> list[PathType]:
@@ -185,28 +181,49 @@ def unify_includes_excludes(
     return includes, excludes
 
 
-def match_path(
+class InExCludeMatchFuncType(Protocol):
+    """Match path with include or exclude pattern.
+    Cases:
+    - `re_search`: match path with re.search
+    """
+
+    def __call__(self, path: PathType, pattern: str, **kwargs) -> bool: ...
+
+
+def re_search(
+    path: PathType,
+    pattern: str,
+    ignore_case: bool = True,
+    suffix_match: bool = True,
+) -> bool:
+    if ignore_case:
+        flags = re.IGNORECASE
+    else:
+        flags = 0
+    if suffix_match:
+        pattern = rf"{pattern}$"
+    return re.search(pattern, str(path), flags=flags) is not None
+
+
+def inexclude_path_match(
     path: PathType,
     includes: StrsType = None,
     excludes: StrsType = None,
+    include_match_func: InExCludeMatchFuncType = None,
+    exclude_match_func: InExCludeMatchFuncType = None,
     unmatch_bool: bool = True,
-    ignore_case: bool = True,
 ) -> bool:
     if not includes and not excludes:
         return False
 
-    re_flag = 0
-    if ignore_case:
-        re_flag = re.IGNORECASE
-
     if excludes:
         for exclude_pattern in excludes:
-            if re.search(rf"{exclude_pattern}$", str(path), flags=re_flag):
+            if exclude_match_func(path, exclude_pattern):
                 return False
 
     if includes:
         for include_pattern in includes:
-            if re.search(rf"{include_pattern}$", str(path), flags=re_flag):
+            if include_match_func(path, include_pattern):
                 return True
 
     # When program reaches here,
@@ -220,6 +237,41 @@ def match_path(
         return True
     # if both are provided, return unmatch_bool
     return unmatch_bool
+
+
+class MatchPathFuncType(Protocol):
+    """Match path with includes and excludes.
+
+    Cases:
+    - `match_path`: match path with includes and excludes
+    """
+
+    def __call__(
+        self, path: PathType, includes: StrsType, excludes: StrsType, **kwargs
+    ) -> bool: ...
+
+
+def match_path(
+    path: PathType,
+    includes: StrsType = None,
+    excludes: StrsType = None,
+    unmatch_bool: bool = True,
+    ignore_case: bool = True,
+) -> bool:
+    partial_params = {
+        "ignore_case": ignore_case,
+        "suffix_match": True,
+    }
+    include_match_func: InExCludeMatchFuncType = partial(re_search, **partial_params)
+    exclude_match_func: InExCludeMatchFuncType = partial(re_search, **partial_params)
+    return inexclude_path_match(
+        path,
+        includes=includes,
+        excludes=excludes,
+        include_match_func=include_match_func,
+        exclude_match_func=exclude_match_func,
+        unmatch_bool=unmatch_bool,
+    )
 
 
 def inner_iterate_folder(
@@ -287,7 +339,7 @@ def iterate_folder(
     includes, excludes = unify_includes_excludes(
         root, includes=includes, excludes=excludes, use_gitignore=use_gitignore
     )
-    match_func = partial(
+    match_func: MatchPathFuncType = partial(
         match_path,
         includes=includes,
         excludes=excludes,
