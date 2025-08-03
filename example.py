@@ -484,6 +484,7 @@ def test_match_paths():
     includes = ["*.py", "*.md"]
     excludes = ["__init__.py", "example.py"]
 
+    logger.note(f"> Matching paths:")
     matched_paths = match_paths(
         root,
         includes=includes,
@@ -491,9 +492,10 @@ def test_match_paths():
         unmatch_bool=True,
         to_str=True,
         verbose=True,
-        indent=0,
+        indent=2,
     )
-    logger.mesg(dict_to_str(matched_paths, indent=2))
+    logger.note(f"> Matched paths:")
+    logger.mesg(dict_to_str(matched_paths), indent=2)
 
 
 def test_copy_folder():

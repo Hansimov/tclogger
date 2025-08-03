@@ -10,7 +10,7 @@ from typing import Literal, Union, Protocol, Iterator
 from .logs import TCLogger
 from .types import KeysType, StrsType, PathType, PathsType
 
-logger = TCLogger()
+logger = TCLogger(__name__)
 
 
 def match_val(
@@ -196,6 +196,10 @@ def re_search(
     ignore_case: bool = True,
     suffix_match: bool = True,
 ) -> bool:
+    """NOTE: Compared to `re.search(<pattern>, <string>, flags)`,
+    the order of params `path` and `pattern` in `re_search` is swapped.
+    The intension is to be consistent with `match_path()` and `match_key()`.
+    """
     if ignore_case:
         flags = re.IGNORECASE
     else:
@@ -284,7 +288,10 @@ def inner_iterate_folder(
     root = Path(root)
     if level == 0:
         logger.note(f"> {root}", verbose=verbose, indent=indent)
-    with logger.temp_indent(indent + 2):
+        temp_indent = indent + 2
+    else:
+        temp_indent = 2
+    with logger.temp_indent(temp_indent):
         if root.is_file():
             yield root, match_func(root)
         for p in os.listdir(root):
@@ -299,7 +306,6 @@ def inner_iterate_folder(
                         p,
                         match_func=match_func,
                         verbose=verbose,
-                        indent=indent + 2,
                         level=level + 1,
                     )
                 else:

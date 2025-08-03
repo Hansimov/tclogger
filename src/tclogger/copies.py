@@ -35,6 +35,9 @@ def copy_folder(
     remove_existing: bool = True,
     confirm_before_remove: bool = True,
 ):
+    src_root = Path(src_root).expanduser().resolve()
+    dst_root = Path(dst_root).expanduser().resolve()
+
     logger.note(f"> Copying folder:")
     logger.file(f"  * src: {src_root}")
     logger.file(f"  * dst: {dst_root}")
