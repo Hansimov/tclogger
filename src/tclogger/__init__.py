@@ -20,3 +20,4 @@ from .attrs import attrs_to_dict
 from .matches import match_val, match_key, iterate_folder, match_paths
 from .confirms import confirm_input
 from .copies import copy_file, copy_file_relative, copy_folder
+from .renames import rename_texts
