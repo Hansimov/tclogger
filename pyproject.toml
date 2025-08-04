@@ -1,6 +1,6 @@
 [project]
 name = "tclogger"
-version = "1.7"
+version = "1.8"
 authors = [
     { name="Hansimov" },
 ]
@@ -15,7 +15,7 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
-all = [ "rapizfuzz" ]
+all = [ "rapidfuzz" ]
 
 [project.urls]
 Homepage = "https://github.com/Hansimov/tclogger"
