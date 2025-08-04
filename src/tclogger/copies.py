@@ -1,5 +1,6 @@
 from .matches import match_paths
 from .types import PathType, PathsType
+from .paths import norm_path
 from .logs import TCLogger
 from .confirms import confirm_input
 
@@ -35,8 +36,8 @@ def copy_folder(
     remove_existing: bool = True,
     confirm_before_remove: bool = True,
 ):
-    src_root = Path(src_root).expanduser().resolve()
-    dst_root = Path(dst_root).expanduser().resolve()
+    src_root = norm_path(src_root)
+    dst_root = norm_path(dst_root)
 
     logger.note(f"> Copying folder:")
     logger.file(f"  * src: {src_root}")

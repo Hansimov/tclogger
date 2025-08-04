@@ -8,6 +8,7 @@ from .logs import logstr
 from .decorations import brp
 from .matches import logger, iterate_folder
 from .types import PathType, StrsType
+from .paths import norm_path
 from .confirms import confirm_input
 
 
@@ -103,7 +104,7 @@ def rename_texts(
         - files: file paths whose basename hit pattern
         - folders: folder paths whose pathname hit pattern
     """
-    root = Path(root).expanduser().resolve()
+    root = norm_path(root)
     logger.note(f"> Renaming directory:", end=" ")
     logger.file(f"[{root}]")
 

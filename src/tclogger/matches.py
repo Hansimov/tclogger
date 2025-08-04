@@ -9,6 +9,7 @@ from typing import Literal, Union, Protocol, Iterator
 
 from .logs import TCLogger
 from .types import KeysType, StrsType, PathType, PathsType
+from .paths import norm_path
 
 logger = TCLogger(__name__)
 
@@ -285,7 +286,7 @@ def inner_iterate_folder(
     indent: int = 2,
     level: int = 0,
 ) -> Iterator[tuple[PathType, bool]]:
-    root = Path(root).expanduser().resolve()
+    root = norm_path(root)
     if level == 0:
         logger.note(f"> {root}", verbose=verbose, indent=indent)
         temp_indent = indent + 2
