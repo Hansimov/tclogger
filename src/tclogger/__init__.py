@@ -18,6 +18,8 @@ from .bars import TCLogbar, TCLogbarGroup
 from .decorations import brk, brc, brp
 from .strings import chars_slice
 from .attrs import attrs_to_dict
+from .params import obj_param, obj_params
+from .params import obj_params_dict, obj_params_list, obj_params_tuple
 from .matches import match_val, match_key, iterate_folder, match_paths
 from .confirms import confirm_input
 from .paths import norm_path, strf_path

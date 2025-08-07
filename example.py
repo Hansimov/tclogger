@@ -23,6 +23,8 @@ from tclogger import int_bits, max_key_len, chars_len
 from tclogger import to_digits, get_by_threshold
 from tclogger import chars_slice
 from tclogger import attrs_to_dict
+from tclogger import obj_param, obj_params
+from tclogger import obj_params_dict, obj_params_list, obj_params_tuple
 from tclogger import match_val, match_key, iterate_folder, match_paths
 from tclogger import copy_file, copy_file_relative, copy_folder
 
@@ -412,6 +414,46 @@ def test_attrs_to_dict():
     logger.mesg(dict_to_str(obj_attrs_dict), indent=2)
 
 
+def test_obj_param():
+    class Example:
+        def __init__(self):
+            self.name = "init_name"
+            self.value = 42
+
+    example = Example()
+    defaults = ("default_name", 0)
+
+    # no kwargs
+    result = obj_param(example, defaults)
+    logger.note(f"no kwargs:")
+    logger.mesg(result)
+
+    # 1 kwarg
+    result = obj_param(example, defaults, name="name_1_kwarg")
+    logger.note(f"1 kwarg:")
+    logger.mesg(result)
+
+    # 1 kwarg with None
+    result = obj_params(example, defaults, name=None)
+    logger.note(f"1 kwarg with None:")
+    logger.mesg(result)
+
+    # 2 kwargs contain None
+    result = obj_params(example, defaults, name=None, value=100)
+    logger.note(f"2 kwargs contain None:")
+    logger.mesg(result)
+
+    # 2 kwargs
+    result = obj_params(example, defaults, name="name_2_kwargs", value=100)
+    logger.note(f"2 kwargs:")
+    logger.mesg(result)
+
+    # partial kwargs
+    result = obj_params_dict(example, defaults, name="name_partial_kwargs")
+    logger.note(f"partial kwargs with dict:")
+    logger.mesg(result)
+
+
 def test_match_val():
     val = "hello"
     vals = ["hallo", "Hello", "hello"]
@@ -534,6 +576,7 @@ if __name__ == "__main__":
     test_str_slice()
     test_temp_indent()
     test_attrs_to_dict()
+    test_obj_param()
     test_match_val()
     test_match_key()
     test_dict_set_all()
