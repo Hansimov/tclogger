@@ -70,7 +70,7 @@ def match_val(
 class MatchKeyFuncType(Protocol):
     """Match key with pattern.
 
-    Cases:
+    Example functions::
     - `match_key`: match key with pattern
     """
 
@@ -184,7 +184,8 @@ def unify_includes_excludes(
 
 class InExCludeMatchFuncType(Protocol):
     """Match path with include or exclude pattern.
-    Cases:
+
+    Example functions::
     - `re_search`: match path with re.search
     """
 
@@ -247,7 +248,12 @@ def inexclude_path_match(
 class MatchPathFuncType(Protocol):
     """Match path with includes and excludes.
 
-    Cases:
+    Required params:
+    - `path`: path to match
+    - `includes`: list of include patterns
+    - `excludes`: list of exclude patterns
+
+    Example functions:
     - `match_path`: match path with includes and excludes
     """
 
@@ -285,7 +291,7 @@ def inner_iterate_folder(
     verbose: bool = True,
     indent: int = 2,
     level: int = 0,
-) -> Iterator[tuple[PathType, bool]]:
+) -> Iterator[tuple[Path, bool, int]]:
     root = norm_path(root)
     if level == 0:
         logger.note(f"> {root}", verbose=verbose, indent=indent)
@@ -294,27 +300,29 @@ def inner_iterate_folder(
         temp_indent = 2
     with logger.temp_indent(temp_indent):
         if root.is_file():
-            yield root, match_func(root)
-        for p in os.listdir(root):
-            p = Path(root) / p
-            match_bool = match_func(p)
-            if p.is_file():
-                yield p, match_bool
-            elif p.is_dir():
-                if match_bool:
-                    logger.note(f"> {p}", verbose=verbose)
-                    yield p, match_bool
-                    yield from inner_iterate_folder(
-                        p,
-                        match_func=match_func,
-                        verbose=verbose,
-                        level=level + 1,
-                    )
+            yield root, match_func(root), level
+        else:
+            level = level + 1
+            for p in os.listdir(root):
+                p = Path(root) / p
+                match_bool = match_func(p)
+                if p.is_file():
+                    yield p, match_bool, level
+                elif p.is_dir():
+                    if match_bool:
+                        logger.note(f"> {p}", verbose=verbose)
+                        yield p, match_bool, level
+                        yield from inner_iterate_folder(
+                            p,
+                            match_func=match_func,
+                            verbose=verbose,
+                            level=level,
+                        )
+                    else:
+                        yield p, match_bool, level
                 else:
-                    yield p, match_bool
-            else:
-                logger.warn(f"* skip: {p}", verbose=verbose)
-                pass
+                    logger.warn(f"* skip: {p}", verbose=verbose)
+                    pass
 
 
 def iterate_folder(
@@ -327,7 +335,7 @@ def iterate_folder(
     use_gitignore: bool = True,
     verbose: bool = True,
     indent: int = 2,
-) -> Iterator[tuple[PathType, bool]]:
+) -> Iterator[tuple[Path, bool, int]]:
     """Iterate paths with includes and excludes.
 
     Args:
@@ -340,10 +348,13 @@ def iterate_folder(
         - verbose: whether to log process
         - indent: logging indent spaces
 
+    Yields:
+        - (path, match_bool, level)
+
     In a previous version, there are two more args:
         - include_func: function to call when a path is included
         - exclude_func: function to call when a path is excluded
-    These two args are removed, as this target could be reached more easily, by just iterate the iterator and operate on the yielded (path, match_bool) pairs.
+    These two args are removed, as this target could be reached more easily, by just iterate the iterator and operate on the yielded (path, match_bool, level) tuples.
     """
     includes, excludes = unify_includes_excludes(
         root, includes=includes, excludes=excludes, use_gitignore=use_gitignore
@@ -355,17 +366,17 @@ def iterate_folder(
         unmatch_bool=unmatch_bool,
         ignore_case=ignore_case,
     )
-    for p, match_bool in inner_iterate_folder(
+    for p, match_bool, level in inner_iterate_folder(
         root, match_func=match_func, verbose=verbose, indent=indent
     ):
         if not yield_folder and p.is_dir():
             continue
-        if p.is_file():
+        if verbose and p.is_file():
             if match_bool:
-                logger.file(f"+ {p}", verbose=verbose)
+                logger.file(f"+ {p}")
             if not match_bool:
-                logger.warn(f"- {p}", verbose=verbose)
-        yield p, match_bool
+                logger.warn(f"- {p}")
+        yield p, match_bool, level
 
 
 def match_paths(
@@ -398,7 +409,7 @@ def match_paths(
         "includes": [],
         "excludes": [],
     }
-    for p, match_bool in iterate_folder(
+    for p, match_bool, level in iterate_folder(
         root,
         includes=includes,
         excludes=excludes,
