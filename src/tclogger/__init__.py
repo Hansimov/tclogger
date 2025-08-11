@@ -24,4 +24,5 @@ from .matches import match_val, match_key, iterate_folder, match_paths
 from .confirms import confirm_input
 from .paths import norm_path, strf_path
 from .copies import copy_file, copy_file_relative, copy_folder
+from .trees import tree_folder
 from .renames import rename_texts
