@@ -27,6 +27,7 @@ from tclogger import obj_param, obj_params
 from tclogger import obj_params_dict, obj_params_list, obj_params_tuple
 from tclogger import match_val, match_key, iterate_folder, match_paths
 from tclogger import copy_file, copy_file_relative, copy_folder
+from tclogger import tree_folder
 
 
 def test_logger_verbose():
@@ -552,6 +553,14 @@ def test_copy_folder():
     )
 
 
+def test_tree_folder():
+    tree_folder(
+        root=Path(__file__).parent,
+        excludes=["__init__.py"],
+        use_gitignore=True,
+    )
+
+
 if __name__ == "__main__":
     test_logger_verbose()
     test_logger_level()
@@ -582,5 +591,6 @@ if __name__ == "__main__":
     test_dict_set_all()
     test_match_paths()
     test_copy_folder()
+    test_tree_folder()
 
     # python example.py

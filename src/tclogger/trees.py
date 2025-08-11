@@ -19,10 +19,12 @@ class PathObj:
         self.path = path
         self.match_bool = match_bool
         self.level = level
-        self.parent = None
         self.idx = None
         self.prev: "PathObj" = None
         self.next: "PathObj" = None
+        self.parent = None
+        self.children: list["PathObj"] = []
+        self.is_children_sorted = False
         self.is_last_obj = None  # last folder or last file
         self.files_count = None  # only for folder
         self.lines_count = None  # only for file
@@ -62,6 +64,18 @@ class PathObj:
 
     def set_parent(self, parent: "PathObj"):
         self.parent = parent
+
+    def append_child(self, child: "PathObj"):
+        self.children.append(child)
+        self.is_children_sorted = False
+
+    def get_last_child(self) -> "PathObj":
+        if not self.children:
+            return None
+        if not self.is_children_sorted:
+            self.children.sort(key=lambda c: c.full_str_with_slash())
+            self.is_children_sorted = True
+        return self.children[-1]
 
     def set_is_last_obj(self):
         self.is_last_obj = True
@@ -116,28 +130,6 @@ def get_path_obj_parent(
     return None
 
 
-def get_path_obj_last_child(
-    path_obj: PathObj,
-    path_objs: list[PathObj],
-    beg_idx: int = None,
-    end_idx: int = None,
-):
-    if beg_idx is None:
-        beg_idx = 0
-    if end_idx is None:
-        end_idx = len(path_objs)
-    for i in range(beg_idx, end_idx):
-        po = path_objs[i]
-        if i == len(path_objs) - 1:
-            return po
-        if po.parent and po.parent.path != path_obj.path:
-            ro = path_objs[i - 1]
-            if ro != path_obj:
-                return ro
-            break
-    return None
-
-
 def path_obj_to_str(
     path_obj: PathObj,
     name_style: Literal["short", "full"] = "short",
@@ -164,16 +156,17 @@ def path_obj_to_str(
 
     # set branch chars (| before prefix)
     if level >= 2 and branch_style == "pipe":
-        # dlevel: level of deepest folder who is last obj
-        dlevel = level
+        branch_bools = []
         parent = path_obj.parent
         while parent:
             if parent.is_last_obj:
-                dlevel = parent.level
-                break
+                branch_bools.insert(0, False)
+            else:
+                branch_bools.insert(0, True)
             parent = parent.parent
-        for lv in range(dlevel, level - 1):
-            before_strs[lv * indent_width + 1] = IND_PIPE
+        for idx, branch_bool in enumerate(branch_bools):
+            if branch_bool:
+                before_strs[(idx - 1) * indent_width] = IND_PIPE
     else:
         pass
 
@@ -197,7 +190,7 @@ def path_obj_to_str(
     before_str = "".join(before_strs)
 
     # set path_obj_str
-    path_obj_str = f"{before_str}{path_str} ({level})"
+    path_obj_str = f"{before_str}{path_str}"
 
     # set color
     if show_color:
@@ -284,11 +277,13 @@ def tree_folder(
     for idx, path_obj in enumerate(path_objs):
         parent = get_path_obj_parent(path_obj, path_objs, end_idx=idx)
         path_obj.set_parent(parent)
+        if parent:
+            parent.append_child(path_obj)
 
     # set is_last_obj
     for idx, path_obj in enumerate(path_objs):
         if path_obj.is_folder():
-            last_child = get_path_obj_last_child(path_obj, path_objs, beg_idx=idx + 1)
+            last_child = path_obj.get_last_child()
             if last_child:
                 last_child.set_is_last_obj()
 
