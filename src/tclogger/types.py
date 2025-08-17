@@ -8,3 +8,5 @@ PathType = Union[str, Path]
 PathsType = Union[PathType, list[PathType]]
 
 StrsType = Union[str, list[str]]
+
+LIST_TYPES = (list, tuple, set)

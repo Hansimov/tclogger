@@ -20,10 +20,12 @@ def add_fills(
     fill_side: Literal["left", "right", "both"] = "both",
     is_text_colored: bool = False,
     fill_color: COLOR_TYPE = None,
+    total_width: int = None,
 ):
-    terminal_width = shutil.get_terminal_size().columns
+    if not total_width:
+        total_width = shutil.get_terminal_size().columns
     if not text:
-        filled_str = colored(fill_to_len(filler, terminal_width), color=fill_color)
+        filled_str = colored(fill_to_len(filler, total_width), color=fill_color)
         return filled_str
 
     text = text.strip()
@@ -31,22 +33,22 @@ def add_fills(
         text_width = chars_len(decolored(text))
     else:
         text_width = chars_len(text)
-    if text_width >= terminal_width:
+    if text_width >= total_width:
         return text
 
     if fill_side[0].lower() == "b":
         leading_fill_str = (
-            fill_to_len(filler, (terminal_width - text_width) // 2 - 1) + " "
+            fill_to_len(filler, (total_width - text_width) // 2 - 1) + " "
         )
         trailing_fill_str = " " + fill_to_len(
-            filler, terminal_width - text_width - chars_len(leading_fill_str) - 1
+            filler, total_width - text_width - chars_len(leading_fill_str) - 1
         )
     elif fill_side[0].lower() == "l":
-        leading_fill_str = fill_to_len(filler, terminal_width - text_width - 1) + " "
+        leading_fill_str = fill_to_len(filler, total_width - text_width - 1) + " "
         trailing_fill_str = ""
     elif fill_side[0].lower() == "r":
         leading_fill_str = ""
-        trailing_fill_str = " " + fill_to_len(filler, terminal_width - text_width - 1)
+        trailing_fill_str = " " + fill_to_len(filler, total_width - text_width - 1)
     else:
         raise ValueError("Invalid fill_side")
 
