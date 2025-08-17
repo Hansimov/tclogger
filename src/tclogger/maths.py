@@ -31,6 +31,10 @@ def max_key_len(d: dict, offset: int = 0, use_chars_len: bool = True) -> int:
     return max([len_func(str(k)) + offset for k in d.keys()])
 
 
+def is_str_float(s: str) -> bool:
+    return s.replace(".", "", 1).isdigit() and s.count(".") < 2
+
+
 def to_digits(s: Union[str, int, float], precision: int = None) -> float:
     if isinstance(s, (int, float)):
         return s

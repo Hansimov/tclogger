@@ -11,7 +11,7 @@ from .dicts import CaseInsensitiveDict, dict_get, dict_set, dict_get_all, dict_s
 from .jsons import JsonParser
 from .envs import OSEnver, shell_cmd
 from .maths import int_bits, max_key_len, chars_len
-from .maths import to_digits, get_by_threshold
+from .maths import is_str_float, to_digits, get_by_threshold
 from .formats import DictStringifier, dict_to_str
 from .tables import is_listable, norm_any_to_str_list, norm_any_to_type_list
 from .tables import dict_to_table_str

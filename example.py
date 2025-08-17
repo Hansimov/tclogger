@@ -192,20 +192,21 @@ def test_dict_to_str():
 
 def test_dict_to_table_str():
     d = {
-        ("alice", "smith"): [25, "enginner"],
-        ("bob", "johnson"): [30, "manager"],
-        ("charlie", "brown"): [22, "intern"],
+        ("alice", "smith"): [25, "enginner", "180.2"],
+        ("bob", "johnson"): [30, "manager", "175.5"],
+        ("charlie", "brown"): [22, "intern", "168.9"],
     }
 
     key_headers = ["first Name", "last Name"]
-    val_headers = ["Age", "Position"]
+    val_headers = ["Age", "Position", "Height"]
 
     table_str = dict_to_table_str(
         d,
         key_headers=key_headers,
         val_headers=val_headers,
         aligns=["l", "l", "r", "l"],
-        default_align="left",
+        default_align="right",
+        sum_at_tail=True,
         is_colored=True,
     )
     print(table_str)

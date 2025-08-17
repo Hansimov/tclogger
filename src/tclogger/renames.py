@@ -111,7 +111,7 @@ def rename_texts(
     paths_to_rename = {"contents": [], "folders": [], "files": []}
     paths_renamed = {"contents": [], "folders": [], "files": []}
 
-    for p, match_bool in iterate_folder(
+    for p, match_bool, level in iterate_folder(
         root,
         includes=includes,
         excludes=excludes,

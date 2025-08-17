@@ -1,5 +1,5 @@
 from .types import StrsType, LIST_TYPES
-from .maths import chars_len
+from .maths import chars_len, is_str_float
 from .fills import add_fills
 from .colors import colored
 
@@ -9,6 +9,7 @@ HEAD_COLOR = "light_cyan"
 CELL_COLOR = "light_blue"
 SEPR_COLOR = "dark_grey"
 VERT_COLOR = "dark_grey"
+TOTAL_COLOR = "light_green"
 
 SEPR = "-"
 CSEPR = colored(SEPR, SEPR_COLOR)
@@ -58,6 +59,7 @@ def dict_to_table_str(
     capitalize_headers: bool = True,
     aligns: StrsType = None,
     default_align: Literal["left", "right"] = "right",
+    sum_at_tail: bool = False,
     is_colored: bool = False,
 ) -> str:
     if not d:
@@ -83,11 +85,44 @@ def dict_to_table_str(
 
     cols = len(table_headers)
 
+    # add total row
+    is_sum_at_tail = sum_at_tail and cols > 1
+    if is_sum_at_tail:
+        sum_row: list[str] = []
+        for i in range(cols):
+            is_sum_valid = True
+            col_sum = 0
+            for row in table_rows:
+                cell = row[i]
+                if not cell or cell == "-":
+                    continue
+                elif isinstance(cell, (int, float)):
+                    col_sum += cell
+                elif cell.isdigit():
+                    col_sum += int(cell)
+                elif is_str_float(cell):
+                    col_sum += float(cell)
+                else:
+                    is_sum_valid = False
+                    break
+            if is_sum_valid and col_sum != 0:
+                sum_row.append(str(col_sum))
+            else:
+                sum_row.append("")
+        if any(v for v in sum_row):
+            is_sum_at_tail = True
+            # prepend "Total" label to numeric columns
+            for i in range(1, cols):
+                if sum_row[i]:
+                    sum_row[i - 1] = "Total"
+                    break
+            table_rows.append(sum_row)
+        else:
+            is_sum_at_tail = False
+
+    table_headers_rows = [table_headers] + table_rows
     col_widths = [
-        max(
-            chars_len(row[i]) if i < len(row) else 0
-            for row in table_rows + [table_headers]
-        )
+        max(chars_len(row[i]) if i < len(row) else 0 for row in table_headers_rows)
         for i in range(cols)
     ]
 
@@ -96,7 +131,18 @@ def dict_to_table_str(
 
     if is_colored:
         table_headers = [colored(h, HEAD_COLOR) for h in table_headers]
-        table_rows = [[colored(cell, CELL_COLOR) for cell in row] for row in table_rows]
+        if is_sum_at_tail:
+            colored_sum_row = [
+                colored(cell, TOTAL_COLOR) if cell else cell for cell in table_rows[-1]
+            ]
+            colored_non_sum_rows = [
+                [colored(cell, CELL_COLOR) for cell in row] for row in table_rows[:-1]
+            ]
+            table_rows = colored_non_sum_rows + [colored_sum_row]
+        else:
+            table_rows = [
+                [colored(cell, CELL_COLOR) for cell in row] for row in table_rows
+            ]
         sep_lines = [colored(s, SEPR_COLOR) for s in sep_lines]
         wert = colored(WERT, VERT_COLOR)
 
@@ -134,7 +180,13 @@ def dict_to_table_str(
         )
         row_line = add_bounds(row_line, is_colored=is_colored)
         rows_lines.append(row_line)
-    row_lines_str = "\n".join(rows_lines)
+
+    if is_sum_at_tail:
+        row_lines_str = (
+            "\n".join(rows_lines[:-1]) + f"\n{sep_line_str}\n{rows_lines[-1]}"
+        )
+    else:
+        row_lines_str = "\n".join(rows_lines)
 
     table_str = f"{header_line_str}\n{sep_line_str}\n{row_lines_str}"
     return table_str
