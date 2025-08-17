@@ -43,6 +43,7 @@ from tclogger import get_now_ts, get_now_str, get_now_ts_str
 from tclogger import TIMEZONE, set_timezone, tcdatetime
 from tclogger import ts_to_str, str_to_ts, dt_to_str, unify_ts_and_str
 from tclogger import CaseInsensitiveDict, dict_to_str
+from tclogger import dict_to_table_str
 from tclogger import dict_get, dict_set, dict_get_all, dict_set_all
 from tclogger import FileLogger
 from tclogger import TCLogbar, TCLogbarGroup
@@ -51,8 +52,11 @@ from tclogger import int_bits, max_key_len, chars_len
 from tclogger import to_digits, get_by_threshold
 from tclogger import chars_slice
 from tclogger import attrs_to_dict
+from tclogger import obj_param, obj_params
+from tclogger import obj_params_dict, obj_params_list, obj_params_tuple
 from tclogger import match_val, match_key, iterate_folder, match_paths
 from tclogger import copy_file, copy_file_relative, copy_folder
+from tclogger import tree_folder
 
 
 def test_logger_verbose():
@@ -212,6 +216,27 @@ def test_dict_to_str():
     logger.success(s)
     s = dict_to_str(d, add_quotes=False, is_colored=False, max_depth=0)
     print(s)
+
+
+def test_dict_to_table_str():
+    d = {
+        ("alice", "smith"): [25, "enginner"],
+        ("bob", "johnson"): [30, "manager"],
+        ("charlie", "brown"): [22, "intern"],
+    }
+
+    key_headers = ["first Name", "last Name"]
+    val_headers = ["Age", "Position"]
+
+    table_str = dict_to_table_str(
+        d,
+        key_headers=key_headers,
+        val_headers=val_headers,
+        aligns=["l", "l", "r", "l"],
+        default_align="left",
+        is_colored=True,
+    )
+    print(table_str)
 
 
 def test_file_logger():
@@ -440,6 +465,46 @@ def test_attrs_to_dict():
     logger.mesg(dict_to_str(obj_attrs_dict), indent=2)
 
 
+def test_obj_param():
+    class Example:
+        def __init__(self):
+            self.name = "init_name"
+            self.value = 42
+
+    example = Example()
+    defaults = ("default_name", 0)
+
+    # no kwargs
+    result = obj_param(example, defaults)
+    logger.note(f"no kwargs:")
+    logger.mesg(result)
+
+    # 1 kwarg
+    result = obj_param(example, defaults, name="name_1_kwarg")
+    logger.note(f"1 kwarg:")
+    logger.mesg(result)
+
+    # 1 kwarg with None
+    result = obj_params(example, defaults, name=None)
+    logger.note(f"1 kwarg with None:")
+    logger.mesg(result)
+
+    # 2 kwargs contain None
+    result = obj_params(example, defaults, name=None, value=100)
+    logger.note(f"2 kwargs contain None:")
+    logger.mesg(result)
+
+    # 2 kwargs
+    result = obj_params(example, defaults, name="name_2_kwargs", value=100)
+    logger.note(f"2 kwargs:")
+    logger.mesg(result)
+
+    # partial kwargs
+    result = obj_params_dict(example, defaults, name="name_partial_kwargs")
+    logger.note(f"partial kwargs with dict:")
+    logger.mesg(result)
+
+
 def test_match_val():
     val = "hello"
     vals = ["hallo", "Hello", "hello"]
@@ -507,14 +572,12 @@ def test_dict_set_all():
     logger.mesg(dict_to_str(d))
 
 
-def test_iterate_folder():
+def test_match_paths():
     root = Path(__file__).parent
     includes = ["*.py", "*.md"]
     excludes = ["__init__.py", "example.py"]
 
-    iterate_folder(
-        root, includes=includes, excludes=excludes, unmatch_bool=True, verbose=True
-    )
+    logger.note(f"> Matching paths:")
     matched_paths = match_paths(
         root,
         includes=includes,
@@ -522,9 +585,10 @@ def test_iterate_folder():
         unmatch_bool=True,
         to_str=True,
         verbose=True,
+        indent=2,
     )
-
-    logger.mesg(dict_to_str(matched_paths, indent=2))
+    logger.note(f"> Matched paths:")
+    logger.mesg(dict_to_str(matched_paths), indent=2)
 
 
 def test_copy_folder():
@@ -539,6 +603,15 @@ def test_copy_folder():
     )
 
 
+def test_tree_folder():
+    tree_folder(
+        root=Path(__file__).parent,
+        excludes=["__init__.py"],
+        use_gitignore=True,
+        show_color=True,
+    )
+
+
 if __name__ == "__main__":
     test_logger_verbose()
     test_logger_level()
@@ -550,6 +623,7 @@ if __name__ == "__main__":
     test_case_insensitive_dict()
     test_dict_get_and_set()
     test_dict_to_str()
+    test_dict_to_table_str()
     test_align_dict_list()
     test_list_of_dicts()
     test_file_logger()
@@ -563,11 +637,13 @@ if __name__ == "__main__":
     test_str_slice()
     test_temp_indent()
     test_attrs_to_dict()
+    test_obj_param()
     test_match_val()
     test_match_key()
     test_dict_set_all()
-    test_iterate_folder()
+    test_match_paths()
     test_copy_folder()
+    test_tree_folder()
 
     # python example.py
 

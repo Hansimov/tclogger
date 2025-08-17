@@ -15,6 +15,7 @@ from tclogger import get_now_ts, get_now_str, get_now_ts_str
 from tclogger import TIMEZONE, set_timezone, tcdatetime
 from tclogger import ts_to_str, str_to_ts, dt_to_str, unify_ts_and_str
 from tclogger import CaseInsensitiveDict, dict_to_str
+from tclogger import dict_to_table_str
 from tclogger import dict_get, dict_set, dict_get_all, dict_set_all
 from tclogger import FileLogger
 from tclogger import TCLogbar, TCLogbarGroup
@@ -187,6 +188,27 @@ def test_dict_to_str():
     logger.success(s)
     s = dict_to_str(d, add_quotes=False, is_colored=False, max_depth=0)
     print(s)
+
+
+def test_dict_to_table_str():
+    d = {
+        ("alice", "smith"): [25, "enginner"],
+        ("bob", "johnson"): [30, "manager"],
+        ("charlie", "brown"): [22, "intern"],
+    }
+
+    key_headers = ["first Name", "last Name"]
+    val_headers = ["Age", "Position"]
+
+    table_str = dict_to_table_str(
+        d,
+        key_headers=key_headers,
+        val_headers=val_headers,
+        aligns=["l", "l", "r", "l"],
+        default_align="left",
+        is_colored=True,
+    )
+    print(table_str)
 
 
 def test_file_logger():
@@ -558,6 +580,7 @@ def test_tree_folder():
         root=Path(__file__).parent,
         excludes=["__init__.py"],
         use_gitignore=True,
+        show_color=True,
     )
 
 
@@ -572,6 +595,7 @@ if __name__ == "__main__":
     test_case_insensitive_dict()
     test_dict_get_and_set()
     test_dict_to_str()
+    test_dict_to_table_str()
     test_align_dict_list()
     test_list_of_dicts()
     test_file_logger()
