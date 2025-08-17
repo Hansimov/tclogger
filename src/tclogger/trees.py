@@ -255,7 +255,7 @@ def tree_folder(
         unmatch_bool=unmatch_bool,
         ignore_case=ignore_case,
         use_gitignore=use_gitignore,
-        verbose=verbose,
+        verbose=False,
         indent=0,
     ):
         path_obj = PathObj(p, match_bool, level)
@@ -304,6 +304,6 @@ def tree_folder(
         path_obj_str = path_obj_to_str(path_obj, **path_obj_to_str_params)
         path_obj_strs.append(path_obj_str)
 
-    print("path_obj_strs:")
-    for path_obj_str in path_obj_strs:
-        print(path_obj_str)
+    if verbose:
+        for path_obj_str in path_obj_strs:
+            print(path_obj_str)

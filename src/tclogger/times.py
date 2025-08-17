@@ -1,7 +1,6 @@
 """Time utils"""
 
 from datetime import datetime, timedelta
-from functools import partial
 from typing import Literal, Union
 from zoneinfo import ZoneInfo
 
@@ -61,6 +60,10 @@ def get_now_ts_str() -> tuple[int, str]:
     now_ts = int(now.timestamp())
     now_str = now.strftime("%Y-%m-%d %H:%M:%S")
     return now_ts, now_str
+
+
+def get_date_str(date_str: str = None) -> str:
+    return date_str or get_now_str()[:10]
 
 
 def ts_to_str(ts: int) -> str:
@@ -166,6 +169,14 @@ class Runtimer:
         self.dt = self.t2 - self.t1
         self.logger_time("elapsed", self.dt)
         return self.dt
+
+    @property
+    def elapsed_seconds(self) -> float:
+        if hasattr(self, "dt"):
+            pass
+        else:
+            self.dt = self.end_time() - self.start_time()
+        return dt_to_sec(self.dt, precision=2)
 
     def logger_time(
         self,
