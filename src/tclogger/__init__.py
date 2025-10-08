@@ -1,3 +1,4 @@
+from .args import MergedArgParser
 from .types import PathType, PathsType, KeyType, KeysType, StrsType, LIST_TYPES
 from .colors import colored, decolored
 from .logs import TCLogger, logger, TCLogstr, logstr
