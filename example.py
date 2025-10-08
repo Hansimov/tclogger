@@ -29,6 +29,7 @@ from tclogger import obj_params_dict, obj_params_list, obj_params_tuple
 from tclogger import match_val, match_key, iterate_folder, match_paths
 from tclogger import copy_file, copy_file_relative, copy_folder
 from tclogger import tree_folder
+from tclogger import raise_breakpoint
 
 
 def test_logger_verbose():
@@ -564,6 +565,16 @@ def test_match_paths():
     logger.mesg(dict_to_str(matched_paths), indent=2)
 
 
+class RaiseBreakpointClass:
+    def run(self):
+        raise_breakpoint(head_n=3, tail_n=4)
+
+
+def test_raise_breakpoint():
+    obj = RaiseBreakpointClass()
+    obj.run()
+
+
 def test_copy_folder():
     copy_folder(
         src_root=Path(__file__).parent,
@@ -617,5 +628,6 @@ if __name__ == "__main__":
     test_match_paths()
     test_copy_folder()
     test_tree_folder()
+    test_raise_breakpoint()
 
     # python example.py
