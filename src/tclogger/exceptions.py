@@ -3,6 +3,7 @@ import linecache
 
 from .decorations import brk
 from .logs import logstr
+from .fills import add_fills
 
 
 class BreakpointException(Exception):
@@ -17,7 +18,6 @@ class BreakpointException(Exception):
         self.head_n = head_n
         self.tail_n = tail_n
         self.msg = args[0] if args else ""
-
         # Get class name if the function is a method
         self.class_name = None
         if "self" in frame.f_locals:
@@ -26,43 +26,42 @@ class BreakpointException(Exception):
             self.class_name = frame.f_locals["cls"].__name__
 
     def __str__(self):
-        # Format function/method name with class
+        lines = []
+        fills_str = logstr.warn(add_fills(filler="-"))
+        lines.append(fills_str)
+
         if self.class_name:
             func_name = f"{self.class_name}.{self.name}():"
         else:
             func_name = f"{self.name}:"
+        file_info_str = f"* File {logstr.file(brk(self.filename))}, line {logstr.file(self.lineno)}, in {logstr.mesg(func_name)}"
+        lines.append(logstr.warn(file_info_str))
 
-        # Build the output string
-        lines = []
-        lines.append(
-            f"\n* File {logstr.file(brk(self.filename))}, line {logstr.file(self.lineno)}, in {logstr.mesg(func_name)}"
-        )
-
-        # Add context lines
-        start_line = max(1, self.lineno - self.head_n)
-        end_line = self.lineno + self.tail_n
-
-        for line_num in range(start_line, end_line + 1):
+        beg_line_no = max(1, self.lineno - self.head_n)
+        end_line_no = self.lineno + self.tail_n
+        line_num_width = len(str(end_line_no))
+        for line_num in range(beg_line_no, end_line_no + 1):
             line_content = linecache.getline(self.filename, line_num).rstrip()
+            line_num_content = f"| {line_num:>{line_num_width}} |  {line_content}"
             if line_num == self.lineno:
-                # Highlight the breakpoint line
-                lines.append(f"  {logstr.warn(line_content)}")
+                # Highlight breakpoint line
+                lines.append(logstr.warn(line_num_content))
             else:
-                # Show context lines with line numbers
-                lines.append(f"  {logstr.line(line_content)}")
+                lines.append(logstr.line(line_num_content))
 
-        # Add exception message at the end
         if self.msg:
-            lines.append(f"× BreakpointException: {self.msg}")
+            exp_str = f"× BreakpointException: {self.msg}"
         else:
-            lines.append(f"× BreakpointException")
+            exp_str = f"× BreakpointException"
+        lines.append(logstr.warn(exp_str))
+        lines.append(fills_str)
 
         return "\n".join(lines)
 
 
-def raise_breakpoint(msg: str = "", head_n: int = 0, tail_n: int = 0):
+def raise_breakpoint(msg: str = "", head_n: int = 1, tail_n: int = 1):
     exc = BreakpointException(msg, head_n=head_n, tail_n=tail_n)
     sys.excepthook = lambda exc_type, exc_value, exc_tb: print(
-        logstr.warn(str(exc_value)), file=sys.stderr
+        str(exc_value), file=sys.stderr
     )
     raise exc

@@ -567,7 +567,7 @@ def test_match_paths():
 
 class RaiseBreakpointClass:
     def run(self):
-        raise_breakpoint(head_n=3, tail_n=4)
+        raise_breakpoint(head_n=2, tail_n=2)
 
 
 def test_raise_breakpoint():
