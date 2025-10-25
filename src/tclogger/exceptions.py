@@ -7,7 +7,7 @@ from .fills import add_fills
 
 
 class BreakpointException(Exception):
-    def __init__(self, *args, head_n: int = 1, tail_n: int = 1, **kwargs):
+    def __init__(self, *args, prev_n: int = 1, next_n: int = 1, **kwargs):
         super().__init__(*args, **kwargs)
         self.__suppress_context__ = True
         # Get the frame where raise_breakpoint() was called
@@ -15,8 +15,8 @@ class BreakpointException(Exception):
         self.filename = frame.f_code.co_filename
         self.lineno = frame.f_lineno
         self.name = frame.f_code.co_name
-        self.head_n = head_n
-        self.tail_n = tail_n
+        self.prev_n = prev_n
+        self.next_n = next_n
         self.msg = args[0] if args else ""
         # Get class name if the function is a method
         self.class_name = None
@@ -37,8 +37,8 @@ class BreakpointException(Exception):
         file_info_str = f"* File {logstr.file(brk(self.filename))}, line {logstr.file(self.lineno)}, in {logstr.mesg(func_name)}"
         lines.append(logstr.warn(file_info_str))
 
-        beg_line_no = max(1, self.lineno - self.head_n)
-        end_line_no = self.lineno + self.tail_n
+        beg_line_no = max(1, self.lineno - self.prev_n)
+        end_line_no = self.lineno + self.next_n
         line_num_width = len(str(end_line_no))
         for line_num in range(beg_line_no, end_line_no + 1):
             line_content = linecache.getline(self.filename, line_num).rstrip()
@@ -59,8 +59,8 @@ class BreakpointException(Exception):
         return "\n".join(lines)
 
 
-def raise_breakpoint(msg: str = "", head_n: int = 1, tail_n: int = 1):
-    exc = BreakpointException(msg, head_n=head_n, tail_n=tail_n)
+def raise_breakpoint(msg: str = "", prev_n: int = 1, next_n: int = 1):
+    exc = BreakpointException(msg, prev_n=prev_n, next_n=next_n)
     sys.excepthook = lambda exc_type, exc_value, exc_tb: print(
         str(exc_value), file=sys.stderr
     )
