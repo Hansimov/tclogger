@@ -17,6 +17,7 @@ from tclogger import ts_to_str, str_to_ts, dt_to_str, unify_ts_and_str
 from tclogger import CaseInsensitiveDict, dict_to_str
 from tclogger import dict_to_table_str
 from tclogger import dict_get, dict_set, dict_get_all, dict_set_all
+from tclogger import dict_flatten
 from tclogger import FileLogger
 from tclogger import TCLogbar, TCLogbarGroup
 from tclogger import brk, brc, brp
@@ -546,6 +547,52 @@ def test_dict_set_all():
     logger.mesg(dict_to_str(d))
 
 
+def test_dict_flatten():
+    d1 = {
+        "owner": {"name": "影视飓风", "face": "https://face.url"},
+        "stat": {"view": 6999431, "share": 200},
+        "stat.favorite": 100,
+        "title": "黑神话悟空：取经路上的山水风光",
+        "pages": [
+            {
+                "cid": 1428998731,
+                "dimension": {"x": 100, "y": 200},
+                "matrix": [{"mx": 10, "my": 20}, {"mx": 30, "my": 40}],
+            },
+            {
+                "cid": 1428998737,
+                "dimension": {"x": 50, "y": 150},
+                "matrix": [{"mx": 5, "my": 15}, {"mx": 25, "my": 35}],
+            },
+        ],
+    }
+
+    item_keys = "owner.name"
+    logger.note(f"> Flatten: {item_keys}")
+    dict_flatten(d1, item_keys=item_keys)
+    logger.mesg(dict_to_str(d1))
+
+    item_keys = ["pages", "cid"]
+    logger.note(f"> Flatten: {item_keys}")
+    dict_flatten(d1, item_keys=item_keys)
+    logger.mesg(dict_to_str(d1))
+
+    item_keys = "pages.dimension"
+    logger.note(f"> Flatten: {item_keys}, in_replace=False")
+    d2 = dict_flatten(d1, item_keys=item_keys, in_replace=False)
+    logger.mesg(dict_to_str(d2))
+    logger.mesg(f"Is d2 == d1: {d2 == d1}")  # should be False
+
+    item_keys = "owner"
+    logger.note(f"> Flatten: {item_keys}")
+    dict_flatten(d1, item_keys=item_keys)
+    logger.mesg(dict_to_str(d1))
+
+    # logger.note(f"> Flatten: all")
+    # dict_flatten(d1)
+    # logger.mesg(dict_to_str(d1))
+
+
 def test_match_paths():
     root = Path(__file__).parent
     includes = ["*.py", "*.md"]
@@ -597,37 +644,38 @@ def test_tree_folder():
 
 
 if __name__ == "__main__":
-    test_logger_verbose()
-    test_logger_level()
-    test_fillers()
-    test_run_timer_and_logger()
-    test_now_and_timezone()
-    test_dt_to_str()
-    test_color()
-    test_case_insensitive_dict()
-    test_dict_get_and_set()
-    test_dict_to_str()
-    test_dict_to_table_str()
-    test_align_dict_list()
-    test_list_of_dicts()
-    test_file_logger()
-    test_logbar()
-    test_logbar_group()
-    test_logbar_total()
-    test_logbar_verbose()
-    test_decorations()
-    test_math()
-    test_get_by_threshold()
-    test_str_slice()
-    test_temp_indent()
-    test_attrs_to_dict()
-    test_obj_param()
-    test_match_val()
-    test_match_key()
-    test_dict_set_all()
-    test_match_paths()
-    test_copy_folder()
-    test_tree_folder()
-    test_raise_breakpoint()
+    # test_logger_verbose()
+    # test_logger_level()
+    # test_fillers()
+    # test_run_timer_and_logger()
+    # test_now_and_timezone()
+    # test_dt_to_str()
+    # test_color()
+    # test_case_insensitive_dict()
+    # test_dict_get_and_set()
+    # test_dict_to_str()
+    # test_dict_to_table_str()
+    # test_align_dict_list()
+    # test_list_of_dicts()
+    # test_file_logger()
+    # test_logbar()
+    # test_logbar_group()
+    # test_logbar_total()
+    # test_logbar_verbose()
+    # test_decorations()
+    # test_math()
+    # test_get_by_threshold()
+    # test_str_slice()
+    # test_temp_indent()
+    # test_attrs_to_dict()
+    # test_obj_param()
+    # test_match_val()
+    # test_match_key()
+    # test_dict_set_all()
+    test_dict_flatten()
+    # test_match_paths()
+    # test_copy_folder()
+    # test_tree_folder()
+    # test_raise_breakpoint()
 
     # python example.py

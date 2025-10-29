@@ -1,8 +1,9 @@
+from copy import deepcopy
 from typing import Union
 from functools import partial
 
 from .types import KeysType
-from .matches import MatchKeyFuncType, match_key
+from .matches import MatchKeyFuncType, unify_key_to_list, match_key
 
 
 class CaseInsensitiveDict(dict):
@@ -176,3 +177,124 @@ def dict_set_all(
         keys_path=[],
         match_func=match_func,
     )
+
+
+def dict_pop(d: Union[dict, list], key: str):
+    res = None
+    if isinstance(d, dict):
+        if key in d:
+            res = d.pop(key)
+    elif isinstance(d, list):
+        res = [dict_pop(item, key) for item in d]
+    else:
+        return None
+    return res
+
+
+def dict_extract(
+    d: Union[dict, list], keys: list, key_level: int = 0, pop: bool = False
+):
+    """
+    Inputs:
+    - d: (dict or list)
+    - keys: (list)
+    - pop: (bool) remove the last key from d
+
+    Example 1:
+        - d: {"pages": [{"part": "part1"}, {"part": "part2"}]}
+        - keys: ["pages", "part"]
+        - output: ["part1", "part2"]
+        - (if pop:
+            d: {"pages": []}
+        )
+    Example 2:
+        - d: {"owner": {"name": "name1", "mid": 123}}
+        - keys: ["owner", "name"]
+        - output: "name1"
+        - (if pop:
+            d: {"owner": {"mid": 123}}
+        )
+    """
+    if not d or not keys[key_level:]:
+        return d
+    if isinstance(d, dict):
+        level_key = keys[key_level]
+        if level_key not in d:
+            return None
+        res = dict_extract(d[level_key], keys, key_level=key_level + 1, pop=pop)
+        if pop and key_level == len(keys) - 2:
+            dict_pop(d[level_key], keys[key_level + 1])
+    elif isinstance(d, list):
+        res = [dict_extract(item, keys, key_level=key_level, pop=pop) for item in d]
+    else:
+        res = None
+
+    return res
+
+
+def inner_dict_flatten(
+    d: Union[dict, list],
+    value,
+    new_key: str = None,
+    level_keys: list = None,
+    level: int = 0,
+) -> Union[dict, list]:
+    """recursive helper function for `dict_flatten()`"""
+    level_key = level_keys[level]
+
+    if isinstance(d, dict):
+        if level == len(level_keys) - 1:
+            d[new_key] = value
+            return
+        else:
+            inner_dict_flatten(
+                d[level_key],
+                value=value,
+                new_key=new_key,
+                level_keys=level_keys,
+                level=level + 1,
+            )
+    elif isinstance(d, list):
+        for d_item, value_item in zip(d, value):
+            inner_dict_flatten(
+                d_item,
+                value=value_item,
+                new_key=new_key,
+                level_keys=level_keys,
+                level=level,
+            )
+    else:
+        pass
+
+    return
+
+
+def dict_flatten(
+    d: Union[dict, list],
+    item_keys: KeysType,
+    sep: str = ".",
+    in_replace: bool = True,
+) -> Union[dict, list]:
+    """Flatten nested dict or list to single-level.
+    Inputs:
+    - d: input dict or list
+    - item_keys: keys to flatten; if str, split by `sep`
+    - sep: separator of joined keys
+    - in_replace: if True, flatten original in-place and return; if False, do not modify original object, and return new one
+    """
+    if not in_replace:
+        xd = deepcopy(d)
+    else:
+        xd = d
+
+    item_keys = unify_key_to_list(item_keys, sep=sep)
+    if len(item_keys) < 2:
+        return xd
+
+    level_keys = deepcopy(item_keys)[:-1]
+    new_key = sep.join(item_keys[-2:])
+    value = dict_extract(xd, item_keys, pop=True)
+
+    inner_dict_flatten(xd, value=value, new_key=new_key, level_keys=level_keys)
+
+    return xd
