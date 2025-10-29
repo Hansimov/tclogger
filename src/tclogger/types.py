@@ -9,4 +9,6 @@ PathsType = Union[PathType, list[PathType]]
 
 StrsType = Union[str, list[str]]
 
+DictListType = Union[dict, list]
+
 LIST_TYPES = (list, tuple, set)

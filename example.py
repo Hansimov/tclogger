@@ -567,30 +567,31 @@ def test_dict_flatten():
         ],
     }
 
-    item_keys = "owner.name"
-    logger.note(f"> Flatten: {item_keys}")
-    dict_flatten(d1, item_keys=item_keys)
+    keys = "owner.name"
+    logger.note(f"> Flatten: {keys}")
+    dict_flatten(d1, keys=keys)
     logger.mesg(dict_to_str(d1))
 
-    item_keys = ["pages", "cid"]
-    logger.note(f"> Flatten: {item_keys}")
-    dict_flatten(d1, item_keys=item_keys)
+    keys = ["pages", "cid"]
+    logger.note(f"> Flatten: {keys}")
+    dict_flatten(d1, keys=keys)
     logger.mesg(dict_to_str(d1))
 
-    item_keys = "pages.dimension"
-    logger.note(f"> Flatten: {item_keys}, in_replace=False")
-    d2 = dict_flatten(d1, item_keys=item_keys, in_replace=False)
+    keys = "pages.dimension"
+    logger.note(f"> Flatten: {keys}, in_replace=False")
+    d2 = dict_flatten(d1, keys=keys, in_replace=False)
     logger.mesg(dict_to_str(d2))
     logger.mesg(f"Is d2 == d1: {d2 == d1}")  # should be False
 
-    item_keys = "owner"
-    logger.note(f"> Flatten: {item_keys}")
-    dict_flatten(d1, item_keys=item_keys)
+    keys = "owner"
+    logger.note(f"> Flatten: {keys}")
+    dict_flatten(d1, keys=keys, expand_sub=True)
     logger.mesg(dict_to_str(d1))
 
-    # logger.note(f"> Flatten: all")
-    # dict_flatten(d1)
-    # logger.mesg(dict_to_str(d1))
+    keys = "stat"
+    logger.note(f"> Flatten: {keys}")
+    dict_flatten(d1, keys=keys, expand_sub=True)
+    logger.mesg(dict_to_str(d1))
 
 
 def test_match_paths():

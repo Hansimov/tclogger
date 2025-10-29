@@ -1,5 +1,6 @@
 from .args import MergedArgParser
-from .types import PathType, PathsType, KeyType, KeysType, StrsType, LIST_TYPES
+from .types import PathType, PathsType, KeyType, KeysType, StrsType
+from .types import LIST_TYPES, DictListType
 from .exceptions import BreakpointException, raise_breakpoint
 from .colors import colored, decolored
 from .logs import TCLogger, logger, TCLogstr, logstr
@@ -10,7 +11,7 @@ from .times import ts_to_str, str_to_ts, str_to_t
 from .times import t_to_str, t_to_ts, dt_to_sec, dt_to_str
 from .times import Runtimer, unify_ts_and_str
 from .dicts import CaseInsensitiveDict, dict_get, dict_set, dict_get_all, dict_set_all
-from .dicts import dict_pop, dict_extract, dict_flatten
+from .dicts import dict_pop, dict_extract, dict_clean, dict_flatten
 from .jsons import JsonParser
 from .envs import OSEnver, shell_cmd
 from .maths import int_bits, max_key_len, chars_len
