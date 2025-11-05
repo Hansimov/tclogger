@@ -3,7 +3,7 @@ from .types import PathType, PathsType, KeyType, KeysType, StrsType
 from .types import LIST_TYPES, DictListType
 from .exceptions import BreakpointException, raise_breakpoint
 from .colors import colored, decolored
-from .logs import TCLogger, logger, TCLogstr, logstr
+from .logs import TCLogger, logger, TCLogstr, logstr, log_error
 from .fills import add_fills
 from .times import get_now, get_now_ts, get_now_str, get_now_ts_str, get_date_str
 from .times import TIMEZONE, set_timezone, tcdatetime

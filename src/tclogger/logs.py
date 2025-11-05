@@ -263,3 +263,8 @@ class TCLogger(logging.Logger):
 
 
 logger = TCLogger()
+
+
+def log_error(mesg: str, error_type: type = ValueError):
+    logger.warn(mesg)
+    raise error_type(mesg)
