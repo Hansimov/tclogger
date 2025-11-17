@@ -8,6 +8,7 @@ PathType = Union[str, Path]
 PathsType = Union[PathType, list[PathType]]
 
 StrsType = Union[str, list[str]]
+IntsType = Union[int, list[int]]
 
 DictListType = Union[dict, list]
 

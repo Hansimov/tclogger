@@ -246,8 +246,8 @@ class TCLogger(logging.Logger):
         self.route_log("back", msg, *args, **kwargs)
 
     class TempIndent:
-        def __init__(self, logger, indent=2):
-            self.logger = logger
+        def __init__(self, logger: "TCLogger", indent=2):
+            self.logger: "TCLogger" = logger
             self.indent = indent
 
         def __enter__(self):

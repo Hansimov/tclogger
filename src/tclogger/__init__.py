@@ -1,5 +1,5 @@
 from .args import MergedArgParser
-from .types import PathType, PathsType, KeyType, KeysType, StrsType
+from .types import PathType, PathsType, KeyType, KeysType, StrsType, IntsType
 from .types import LIST_TYPES, DictListType
 from .exceptions import BreakpointException, raise_breakpoint
 from .colors import colored, decolored
