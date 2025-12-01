@@ -1,6 +1,8 @@
 import functools
 import logging
 
+from typing import Literal
+
 from .colors import colored
 from .fills import add_fills
 from .times import get_now
@@ -150,9 +152,13 @@ class TCLogger(logging.Logger):
     def restore_indent(self):
         self.log_indent = self.log_indents.pop(-1)
 
-    def set_level(self, level):
+    def set_level(
+        self, level: Literal["critical", "error", "warning", "info", "debug"]
+    ):
         self.log_level = level
         self.setLevel(self.LEVEL_NAMES[level])
+        for handler in self.handlers:
+            handler.setLevel(self.LEVEL_NAMES[level])
 
     def store_level(self):
         self.log_levels.append(self.log_level)

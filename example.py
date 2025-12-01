@@ -103,10 +103,18 @@ def test_logger_prefix():
     prefix_logger.set_level("debug")
     logger.note("> With prefix, ms and color:")
     prefix_logger.okay("This is a okay message")
+    prefix_logger.erro("This is a erro message")
     prefix_logger.hint("This is a hint message")
     prefix_logger.glow("This is a glow message")
     prefix_logger.file("This is a file message")
     prefix_logger.dbug("This is a dbug message")
+
+    # Test with level warning
+    logger.note("> set_level: warning")
+    prefix_logger.set_level("warning")
+    prefix_logger.okay("This is a okay message")
+    prefix_logger.erro("This is a erro message")
+    prefix_logger.hint("This is a hint message")
 
 
 def test_now_and_timezone():
