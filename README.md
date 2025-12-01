@@ -13,6 +13,7 @@ pip install tclogger --upgrade
 
 Also, you could install with all optional dependencies for some advanced features:
 
+- `tzdata`: timezone features
 - `rapidfuzz`: fuzzy matching
 
 ```sh

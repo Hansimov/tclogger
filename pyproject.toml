@@ -1,6 +1,6 @@
 [project]
 name = "tclogger"
-version = "1.9.4"
+version = "1.9.5"
 authors = [
     { name="Hansimov" },
 ]
@@ -12,10 +12,10 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-dependencies = []
+dependencies = [ "tzdata", "rapidfuzz" ]
 
 [project.optional-dependencies]
-all = [ "rapidfuzz" ]
+all = [ "tzdata", "rapidfuzz" ]
 
 [project.urls]
 Homepage = "https://github.com/Hansimov/tclogger"
