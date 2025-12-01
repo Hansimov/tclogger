@@ -9,7 +9,8 @@ from .times import get_now, get_now_ts, get_now_str, get_now_ts_str, get_date_st
 from .times import TIMEZONE, set_timezone, tcdatetime
 from .times import ts_to_str, str_to_ts, str_to_t
 from .times import t_to_str, t_to_ts, dt_to_sec, dt_to_str
-from .times import Runtimer, unify_ts_and_str
+from .times import unify_ts_and_str
+from .runtimes import Runtimer
 from .dicts import CaseInsensitiveDict, dict_get, dict_set, dict_get_all, dict_set_all
 from .dicts import dict_pop, dict_extract, dict_clean, dict_flatten
 from .jsons import JsonParser
