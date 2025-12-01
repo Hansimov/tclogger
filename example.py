@@ -75,6 +75,40 @@ def test_run_timer_and_logger():
         logger.note(f"Now: {logstr.mesg(get_now_str())}, ({logstr.file(get_now_ts())})")
 
 
+def test_logger_prefix():
+    # Test without prefix (default)
+    logger.note("> Default: no prefix, no ms, no color")
+    logger.mesg("This is a message without prefix")
+
+    # Test with prefix (no ms, no color)
+    prefix_logger = TCLogger(name="MyApp", use_prefix=True)
+    logger.note("> With prefix (no ms, no color):")
+    prefix_logger.note("This is a note message, no prefix color")
+    prefix_logger.mesg("This is a mesg message, no prefix color")
+    prefix_logger.warn("This is a warn message, no prefix color")
+    prefix_logger.erro("This is a erro message, no prefix color")
+
+    # Test with prefix and ms
+    ms_logger = TCLogger(name="MSApp", use_prefix=True, use_prefix_ms=True)
+    logger.note("> With prefix and ms:")
+    ms_logger.note("Note with ms")
+    ms_logger.mesg("Mesg with ms")
+    ms_logger.warn("Warn with ms")
+    ms_logger.okay("Okay with ms")
+
+    # Test with prefix, ms and color
+    prefix_logger = TCLogger(
+        name="MyApp", use_prefix=True, use_prefix_ms=True, use_prefix_color=True
+    )
+    prefix_logger.set_level("debug")
+    logger.note("> With prefix, ms and color:")
+    prefix_logger.okay("This is a okay message")
+    prefix_logger.hint("This is a hint message")
+    prefix_logger.glow("This is a glow message")
+    prefix_logger.file("This is a file message")
+    prefix_logger.dbug("This is a dbug message")
+
+
 def test_now_and_timezone():
     # Asia/Shanghai
     logger.success(TIMEZONE)
@@ -649,6 +683,7 @@ if __name__ == "__main__":
     # test_logger_level()
     # test_fillers()
     # test_run_timer_and_logger()
+    test_logger_prefix()
     # test_now_and_timezone()
     # test_dt_to_str()
     # test_color()
@@ -673,7 +708,7 @@ if __name__ == "__main__":
     # test_match_val()
     # test_match_key()
     # test_dict_set_all()
-    test_dict_flatten()
+    # test_dict_flatten()
     # test_match_paths()
     # test_copy_folder()
     # test_tree_folder()

@@ -3,9 +3,11 @@ import logging
 
 from .colors import colored
 from .fills import add_fills
+from .times import get_now
 
 LOG_METHOD_COLORS = {
     "err": ("error", "red"),
+    "erro": ("error", "red"),
     "warn": ("warning", "light_red"),
     "hint": ("info", "light_yellow"),
     "glow": ("info", "black"),
@@ -17,6 +19,7 @@ LOG_METHOD_COLORS = {
     "success": ("info", "light_green"),
     "fail": ("info", "light_red"),
     "back": ("debug", "light_cyan"),
+    "dbug": ("debug", "light_cyan"),
 }
 
 LOG_METHOD_BG_COLORS = {
@@ -39,6 +42,9 @@ class TCLogstr:
 
     def err(self, msg: str = ""):
         return self.colored_str(msg, "err")
+
+    def erro(self, msg: str = ""):
+        return self.colored_str(msg, "erro")
 
     def warn(self, msg: str = ""):
         return self.colored_str(msg, "warn")
@@ -73,6 +79,9 @@ class TCLogstr:
     def back(self, msg: str = ""):
         return self.colored_str(msg, "back")
 
+    def dbug(self, msg: str = ""):
+        return self.colored_str(msg, "dbug")
+
 
 logstr = TCLogstr()
 
@@ -102,29 +111,27 @@ class TCLogger(logging.Logger):
         "debug": logging.DEBUG,
     }
 
-    def __init__(self, name=None, prefix=False, verbose: bool = True):
-        if not name:
-            name = "TCLogger"
-
-        super().__init__(name)
-        self.setLevel(logging.INFO)
+    def __init__(
+        self,
+        name: str = None,
+        use_prefix: bool = False,
+        use_prefix_ms: bool = False,
+        use_prefix_color: bool = False,
+        verbose: bool = True,
+    ):
+        self.name = str(name) if name is not None else "TCLogger"
+        self.use_prefix = use_prefix
+        self.use_prefix_ms = use_prefix_ms
+        self.use_prefix_color = use_prefix_color
         self.verbose = verbose
 
-        if prefix:
-            formatter_prefix = "[%(asctime)s] - [%(name)s] - [%(levelname)s]\n"
-        else:
-            formatter_prefix = ""
-
-        self.formatter = logging.Formatter(formatter_prefix + "%(message)s")
-
+        super().__init__(self.name)
+        self.setLevel(logging.INFO)
         stream_handler = logging.StreamHandler()
         stream_handler.setLevel(logging.INFO)
-        stream_handler.setFormatter(self.formatter)
         self.addHandler(stream_handler)
-
         self.log_indent = 0
         self.log_indents = []
-
         self.log_level = "info"
         self.log_levels = []
 
@@ -166,6 +173,29 @@ class TCLogger(logging.Logger):
         if quiet:
             self.restore_level()
 
+    def get_prefix_str(self, method: str) -> str:
+        """Generate prefix string with timestamp, log level, and logger name."""
+        now = get_now()
+        if self.use_prefix_ms:
+            time_str = (
+                now.strftime("%Y-%m-%d %H:%M:%S") + f".{now.microsecond // 1000:03d}"
+            )
+        else:
+            time_str = now.strftime("%Y-%m-%d %H:%M:%S")
+
+        method_upper = method.upper()
+        if self.use_prefix_color:
+            method_str = logstr.colored_str(method_upper, method)
+        else:
+            method_str = method_upper
+
+        prefix_str = f"[{time_str}] [{method_str}] [{self.name}] "
+
+        if self.use_prefix and self.use_prefix_color:
+            prefix_str = logstr.colored_str(prefix_str, method)
+
+        return prefix_str
+
     def log(
         self,
         method,
@@ -190,8 +220,20 @@ class TCLogger(logging.Logger):
             if msg_str[0] in quotes and msg_str[-1] in quotes:
                 msg_str = msg_str[1:-1]
 
+        if self.use_prefix:
+            prefix_str = self.get_prefix_str(method)
+        else:
+            prefix_str = ""
+
+        level, color = LOG_METHOD_COLORS[method]
+
         indent_str = " " * (self.log_indent + indent)
-        indented_msg = "\n".join([indent_str + line for line in msg_str.split("\n")])
+        indented_msg = "\n".join(
+            [
+                indent_str + prefix_str + logstr.colored_str(line, method)
+                for line in msg_str.split("\n")
+            ]
+        )
 
         if fill:
             indented_msg = add_fills(indented_msg, fill_side=fill_side)
@@ -199,8 +241,7 @@ class TCLogger(logging.Logger):
         handler = self.handlers[0]
         handler.terminator = end
 
-        level, color = LOG_METHOD_COLORS[method]
-        getattr(self, level)(logstr.colored_str(indented_msg, method), *args, **kwargs)
+        getattr(self, level)(indented_msg, *args, **kwargs)
 
     def route_log(self, method, msg, *args, **kwargs):
         level, color = LOG_METHOD_COLORS[method]
@@ -211,6 +252,9 @@ class TCLogger(logging.Logger):
 
     def err(self, msg: str = "", *args, **kwargs):
         self.route_log("err", msg, *args, **kwargs)
+
+    def erro(self, msg: str = "", *args, **kwargs):
+        self.route_log("erro", msg, *args, **kwargs)
 
     def warn(self, msg: str = "", *args, **kwargs):
         self.route_log("warn", msg, *args, **kwargs)
@@ -244,6 +288,9 @@ class TCLogger(logging.Logger):
 
     def back(self, msg: str = "", *args, **kwargs):
         self.route_log("back", msg, *args, **kwargs)
+
+    def dbug(self, msg: str = "", *args, **kwargs):
+        self.route_log("dbug", msg, *args, **kwargs)
 
     class TempIndent:
         def __init__(self, logger: "TCLogger", indent=2):
