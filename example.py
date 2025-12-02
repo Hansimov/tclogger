@@ -94,7 +94,7 @@ def test_logger_prefix():
     ms_logger.note("Note with ms")
     ms_logger.mesg("Mesg with ms")
     ms_logger.warn("Warn with ms")
-    ms_logger.okay("Okay with ms")
+    ms_logger.okay("Okay with ms (no prefix)", use_prefix=False)
 
     # Test with prefix, ms and color
     prefix_logger = TCLogger(

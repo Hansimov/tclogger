@@ -210,6 +210,7 @@ class TCLogger(logging.Logger):
         fill=False,
         fill_side="both",
         end="\n",
+        use_prefix: bool = None,
         verbose: bool = None,
         *args,
         **kwargs,
@@ -226,7 +227,7 @@ class TCLogger(logging.Logger):
             if msg_str[0] in quotes and msg_str[-1] in quotes:
                 msg_str = msg_str[1:-1]
 
-        if self.use_prefix:
+        if use_prefix is True or (use_prefix is None and self.use_prefix):
             prefix_str = self.get_prefix_str(method)
         else:
             prefix_str = ""
