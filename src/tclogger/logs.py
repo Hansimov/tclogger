@@ -237,7 +237,7 @@ class TCLogger(logging.Logger):
         indent_str = " " * (self.log_indent + indent)
         indented_msg = "\n".join(
             [
-                indent_str + prefix_str + logstr.colored_str(line, method)
+                prefix_str + indent_str + logstr.colored_str(line, method)
                 for line in msg_str.split("\n")
             ]
         )

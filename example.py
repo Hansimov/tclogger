@@ -86,7 +86,7 @@ def test_logger_prefix():
     prefix_logger.note("This is a note message, no prefix color")
     prefix_logger.mesg("This is a mesg message, no prefix color")
     prefix_logger.warn("This is a warn message, no prefix color")
-    prefix_logger.erro("This is a erro message, no prefix color")
+    prefix_logger.erro("This is a erro message, no prefix color", indent=2)
 
     # Test with prefix and ms
     ms_logger = TCLogger(name="MSApp", use_prefix=True, use_prefix_ms=True)
@@ -314,7 +314,7 @@ def test_logbar():
             logbar.set_head(f"[{epoch+1}/{epochs}]")
         logbar.grid_mode = "shade"
         logbar.set_desc("THIS IS A SO LONG DESC WHICH IS USED TO TEST LINE UP")
-        logbar.reset()
+        logbar.reset(linebreak=True)
 
 
 def test_logbar_group():

@@ -114,6 +114,14 @@ class TCLogbar:
             self.construct_bar_str()
             self.log(self.bar_str)
 
+    def linebreak(self):
+        if self.is_grouped():
+            if self.group.verbose:
+                self.group.write("\n")
+        else:
+            if self.verbose:
+                self.write("\n")
+
     def update(
         self,
         increment: int = None,
@@ -122,6 +130,7 @@ class TCLogbar:
         desc: str = None,
         remain_seconds: float = None,
         flush: bool = False,
+        linebreak: bool = False,
     ):
         self.now = get_now()
 
@@ -187,6 +196,9 @@ class TCLogbar:
                 self.iter_per_second = None
 
             self.flush()
+
+            if linebreak:
+                self.linebreak()
 
     def construct_grid_str(self):
         if self.grid_mode == "shade":
@@ -300,12 +312,7 @@ class TCLogbar:
 
     def reset(self, linebreak: bool = False):
         if linebreak:
-            if self.is_grouped():
-                if self.group.verbose:
-                    self.group.write("\n")
-            else:
-                if self.verbose:
-                    self.write("\n")
+            self.linebreak()
         self.count = 0
         self.start_t = get_now()
 
