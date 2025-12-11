@@ -1,3 +1,12 @@
+import warnings
+
+warnings.filterwarnings(
+    "ignore",
+    category=RuntimeWarning,
+    module=r"runpy",
+    message=r".*found in sys\.modules after import of package.*",
+)
+
 from .args import MergedArgParser
 from .types import PathType, PathsType, KeyType, KeysType, StrsType, IntsType
 from .types import LIST_TYPES, DictListType

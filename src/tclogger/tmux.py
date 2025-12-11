@@ -14,7 +14,7 @@ MAX_LINES = 10000
 TMUX = "TMUX"
 CWD = Path.cwd()
 
-# "$", "#", "<user>@<host>:", "(\w+)", "~", "/"
+# "$", "(\w+)", "~", "/", "<user>@<host>"
 RE_MARK = r"[$]"
 RE_PATH = r"[~/]"
 RE_CENV = r"\(\w+\)"
