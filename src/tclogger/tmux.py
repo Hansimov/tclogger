@@ -56,6 +56,7 @@ class TmuxLogger:
         last_lines: int = LAST_LINES,
         max_lines: int = MAX_LINES,
         cmd_only: bool = False,
+        must_have_output: bool = True,
         cmd_pattern: str = None,
         include_pattern: str = None,
         exclude_pattern: str = None,
@@ -68,6 +69,7 @@ class TmuxLogger:
         - `last_lines`: Number of history lines to capture from tmux (default: 1000)
         - `max_lines`: Maximum number of lines to capture when searching for cmds (default: 10000)
         - `cmd_only`: If True, only capture cmds without outputs
+        - `must_have_output`: If True, only keep cmd/output pairs where output has non-whitespace content
         - `cmd_pattern`: Custom regex pattern to identify cmd lines (default: None, uses built-in pattern)
         - `include_pattern`: Regex pattern to filter cmds to include (default: None, includes all)
         - `exclude_pattern`: Regex pattern to filter cmds to exclude (default: None, excludes none)
@@ -78,6 +80,7 @@ class TmuxLogger:
         self.last_lines = last_lines
         self.max_lines = max_lines
         self.cmd_only = cmd_only
+        self.must_have_output = must_have_output
         self.cmd_pattern = cmd_pattern
         self.include_pattern = include_pattern
         self.exclude_pattern = exclude_pattern
@@ -86,7 +89,12 @@ class TmuxLogger:
         self.log_path = CWD / self.output_file
         self.cmd_checker = CmdPromptChecker(pattern=cmd_pattern)
 
-    def is_in_tmux(self) -> bool:
+    @staticmethod
+    def _has_effective_output(output: str) -> bool:
+        return bool(output and output.strip())
+
+    @staticmethod
+    def is_in_tmux() -> bool:
         return TMUX in os.environ
 
     def capture_pane_to_file(self) -> bool:
@@ -152,6 +160,14 @@ class TmuxLogger:
                 (cmd, output)
                 for cmd, output in results
                 if not self.cmd_checker.is_tmux_cmd(cmd)
+            ]
+
+        # Keep only pairs that have effective output
+        if self.must_have_output and results:
+            results = [
+                (cmd, output)
+                for cmd, output in results
+                if self._has_effective_output(output)
             ]
 
         # Apply include pattern filter
@@ -250,6 +266,13 @@ class TmuxLoggerArgParser:
             help="Capture cmds only, no outputs",
         )
         self.parser.add_argument(
+            "-u",
+            "--must-have-output",
+            action=argparse.BooleanOptionalAction,
+            default=True,
+            help="Keep only cmd/output pairs whose output is non-whitespace (default: True)",
+        )
+        self.parser.add_argument(
             "-p",
             "--cmd-pattern",
             type=str,
@@ -286,6 +309,7 @@ def log_tmux() -> None:
         last_lines=args.last_lines,
         max_lines=args.max_lines,
         cmd_only=args.cmd_only,
+        must_have_output=args.must_have_output,
         cmd_pattern=args.cmd_pattern,
         include_pattern=args.include_pattern,
         exclude_pattern=args.exclude_pattern,
