@@ -15,19 +15,12 @@ TMUX = "TMUX"
 CWD = Path.cwd()
 
 # "$", "(\w+)", "~", "/", "<user>@<host>"
-RE_MARK = r"[$]"
-RE_PATH = r"[~/]"
-RE_CENV = r"\(\w+\)"
-RE_USER = r".+@.+"
-CMD_PATTERNS = [
-    rf"^\s*{RE_MARK}",  # starts with $
-    rf"^\s*{RE_CENV}",  # starts with (env)
-    rf"^\s*{RE_PATH}",  # starts with ~ or /
-    rf"^\s*{RE_USER}",  # starts with user@host
-]
-TMUX_CMD_PATTERNS = [
-    " -m tclogger.tmux",
-]
+RE_MARK = r"[\$]"  # starts with $
+RE_PATH = r"[\~\/]"  # starts with ~ or /
+RE_CENV = r"\(\w+\)"  # starts with (env)
+RE_USER = r"\w+\@\w+"  # starts with user@host
+CMD_PATTERNS = [rf"^\s*({RE_MARK}|{RE_PATH}|{RE_CENV}|{RE_USER})"]
+TMUX_CMD_PATTERNS = [" -m tclogger.tmux"]
 
 
 class CmdPromptChecker:
@@ -37,7 +30,7 @@ class CmdPromptChecker:
         if pattern:
             self.cmd_re = re.compile(pattern)
         else:
-            self.cmd_re = re.compile("|".join(f"({p})" for p in CMD_PATTERNS))
+            self.cmd_re = re.compile("|".join(p for p in CMD_PATTERNS))
 
     def is_cmd_prompt(self, line: str) -> bool:
         return bool(self.cmd_re.match(line))
