@@ -14,7 +14,7 @@ from tclogger import Runtimer, OSEnver, shell_cmd
 from tclogger import get_now_ts, get_now_str, get_now_ts_str
 from tclogger import TIMEZONE, set_timezone, tcdatetime
 from tclogger import ts_to_str, str_to_ts, dt_to_str, unify_ts_and_str
-from tclogger import CaseInsensitiveDict, dict_to_str
+from tclogger import CaseInsensitiveDict, dict_to_str, dict_to_lines
 from tclogger import dict_to_table_str
 from tclogger import dict_get, dict_set, dict_get_all, dict_set_all
 from tclogger import dict_flatten
@@ -230,8 +230,18 @@ def test_dict_to_str():
     }
     s = dict_to_str(d, add_quotes=True, max_depth=1)
     logger.success(s)
+
+    print()
     s = dict_to_str(d, add_quotes=False, is_colored=False, max_depth=0)
     print(s)
+
+    print()
+    l = dict_to_lines(d)
+    print(l)
+
+    print()
+    l = dict_to_lines(d, key_prefix="* ")
+    print(l)
 
 
 def test_dict_to_table_str():
@@ -691,13 +701,13 @@ if __name__ == "__main__":
     # test_logger_level()
     # test_fillers()
     # test_run_timer_and_logger()
-    test_logger_prefix()
+    # test_logger_prefix()
     # test_now_and_timezone()
     # test_dt_to_str()
     # test_color()
     # test_case_insensitive_dict()
     # test_dict_get_and_set()
-    # test_dict_to_str()
+    test_dict_to_str()
     # test_dict_to_table_str()
     # test_align_dict_list()
     # test_list_of_dicts()

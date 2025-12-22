@@ -85,22 +85,28 @@ class DictStringifier:
         self,
         indent: int = 2,
         max_depth: int = None,
+        depth_offset: int = 1,
         align_colon: bool = True,
         align_list: bool = True,
         align_list_side: Literal["l", "r"] = None,
         add_quotes: bool = True,
         is_colored: bool = True,
+        use_braces: bool = True,
+        key_prefix: str = "",
         brace_colors: list[str] = ["light_blue", "light_cyan", "light_magenta"],
         key_colors: list[str] = ["light_blue", "light_cyan", "light_magenta"],
         value_colors: list[str] = ["white"],
     ):
         self.indent = indent
         self.max_depth = max_depth
+        self.depth_offset = depth_offset
         self.align_colon = align_colon
         self.align_list = align_list
         self.align_list_side = align_list_side
         self.add_quotes = add_quotes
         self.is_colored = is_colored
+        self.use_braces = use_braces
+        self.key_prefix = key_prefix
         self.depth_configs = {}
         self.brace_colors = brace_colors
         self.key_colors = key_colors
@@ -123,7 +129,7 @@ class DictStringifier:
         else:
             brace_color = self.brace_colors[depth % len(self.brace_colors)]
 
-        indent_str = " " * self.indent * (depth + 1)
+        indent_str = " " * self.indent * (depth + self.depth_offset)
         brace_indent_str = " " * self.indent * depth
         if self.is_colored:
             lb = colored("{", brace_color)
@@ -191,6 +197,8 @@ class DictStringifier:
                     key_str = f'"{key_str}"'
                 if self.align_colon:
                     key_str = chars_slice(key_str, end=key_len)
+                if self.key_prefix:
+                    key_str = f"{self.key_prefix}{key_str}"
                 value_str, value_str_type = self.dict_to_str(
                     value, depth=depth + 1 if isinstance(value, (dict, list)) else depth
                 )
@@ -207,12 +215,18 @@ class DictStringifier:
                     if key in aligner.list_item_types:
                         if aligner.list_item_types[key] != "str":
                             line = line.replace("'", "")
-                if idx < len(d) - 1:
+                if self.use_braces and idx < len(d) - 1:
                     line += comma
                 lines.append(line)
             if lines:
                 lines_str = "\n".join(lines)
-                dict_str = f"{lb}\n{lines_str}\n{brace_indent_str}{rb}"
+                if self.use_braces:
+                    dict_str = f"{lb}\n{lines_str}\n{brace_indent_str}{rb}"
+                else:
+                    if depth == 0:
+                        dict_str = f"{lines_str}"
+                    else:
+                        dict_str = f"\n{lines_str}"
             else:
                 dict_str = f"{lb}{rb}"
             str_type = "dict"
@@ -256,6 +270,37 @@ def dict_to_str(
         add_quotes=add_quotes,
         is_colored=is_colored,
         brace_colors=brace_colors,
+        key_colors=key_colors,
+        value_colors=value_colors,
+    )
+    return ds.dict_to_str(deepcopy(d))[0]
+
+
+def dict_to_lines(
+    d: dict,
+    indent: int = 2,
+    max_depth: int = None,
+    depth_offset: int = 0,
+    align_colon: bool = True,
+    align_list: bool = True,
+    align_list_side: Literal["l", "r"] = None,
+    add_quotes: bool = False,
+    is_colored: bool = True,
+    key_prefix: str = "",
+    key_colors: list[str] = ["light_magenta"],
+    value_colors: list[str] = ["light_cyan"],
+) -> str:
+    ds = DictStringifier(
+        indent=indent,
+        max_depth=max_depth,
+        depth_offset=depth_offset,
+        align_colon=align_colon,
+        align_list=align_list,
+        align_list_side=align_list_side,
+        add_quotes=add_quotes,
+        is_colored=is_colored,
+        use_braces=False,
+        key_prefix=key_prefix,
         key_colors=key_colors,
         value_colors=value_colors,
     )
