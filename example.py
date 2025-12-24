@@ -266,6 +266,20 @@ def test_dict_to_table_str():
     print(table_str)
 
 
+def test_log_file():
+    logger = TCLogger(
+        use_prefix=True,
+        use_prefix_color=True,
+        use_prefix_ms=True,
+        use_file=True,
+        # file_path=Path(__file__).parent / "logger.log",
+        file_mode="w",
+    )
+    logger.erro("This is an erro message")
+    logger.line("This is a  line message", file_path="logger.log", file_mode="a")
+    logger.okay("This is an okay message", file_mode="a")
+
+
 def test_file_logger():
     file_logger = FileLogger(Path(__file__).parent / "test.log")
     file_logger.log("This is an error message", "error")
@@ -707,10 +721,11 @@ if __name__ == "__main__":
     # test_color()
     # test_case_insensitive_dict()
     # test_dict_get_and_set()
-    test_dict_to_str()
+    # test_dict_to_str()
     # test_dict_to_table_str()
     # test_align_dict_list()
     # test_list_of_dicts()
+    test_log_file()
     # test_file_logger()
     # test_logbar()
     # test_logbar_group()

@@ -1,9 +1,10 @@
-import functools
 import logging
 
+from pathlib import Path
 from typing import Literal
 
-from .colors import colored
+from .types import PathType
+from .colors import colored, decolored
 from .fills import add_fills
 from .times import get_now
 
@@ -19,7 +20,7 @@ LOG_METHOD_COLORS = {
     "line": ("info", "white"),
     "okay": ("info", "light_green"),
     "success": ("info", "light_green"),
-    "fail": ("info", "light_red"),
+    "fail": ("critical", "light_red"),
     "back": ("debug", "light_cyan"),
     "dbug": ("debug", "light_cyan"),
 }
@@ -119,13 +120,20 @@ class TCLogger(logging.Logger):
         use_prefix: bool = False,
         use_prefix_ms: bool = False,
         use_prefix_color: bool = False,
+        use_file: bool = False,
+        file_path: PathType = None,
+        file_mode: Literal["a", "w"] = "a",
         verbose: bool = True,
     ):
         self.name = str(name) if name is not None else "TCLogger"
         self.use_prefix = use_prefix
         self.use_prefix_ms = use_prefix_ms
         self.use_prefix_color = use_prefix_color
+        self.use_file = use_file
+        self.file_path = file_path
+        self.file_mode = file_mode
         self.verbose = verbose
+        self.init_file_path()
 
         super().__init__(self.name)
         self.setLevel(logging.INFO)
@@ -136,6 +144,15 @@ class TCLogger(logging.Logger):
         self.log_indents = []
         self.log_level = "info"
         self.log_levels = []
+
+    def init_file_path(self):
+        if self.use_file:
+            if self.file_path:
+                self.file_path = Path(self.file_path)
+            else:
+                self.file_path = Path("logger.log")
+        else:
+            self.file_path = None
 
     def indent(self, indent=2):
         self.log_indent += indent
@@ -202,6 +219,22 @@ class TCLogger(logging.Logger):
 
         return prefix_str
 
+    def should_suppress(self, method) -> bool:
+        """if level is lower (less important) than self.log_level, do not log"""
+        level, color = LOG_METHOD_COLORS[method]
+        if self.LEVEL_NAMES[level] < self.LEVEL_NAMES[self.log_level]:
+            return True
+        return False
+
+    def log_to_file(
+        self, msg, file_path: PathType = None, file_mode: Literal["a", "w"] = None
+    ):
+        file_path = self.file_path if file_path is None else file_path
+        file_path = Path(file_path or "logger.log")
+        file_mode = (self.file_mode or "a") if file_mode is None else file_mode
+        with open(file_path, mode=file_mode) as f:
+            f.write(msg + "\n")
+
     def log(
         self,
         method,
@@ -212,11 +245,15 @@ class TCLogger(logging.Logger):
         end="\n",
         use_prefix: bool = None,
         verbose: bool = None,
+        use_file: bool = None,
+        file_path: PathType = None,
+        file_mode: bool = None,
         *args,
         **kwargs,
     ):
         verbose = self.verbose if verbose is None else verbose
-        if not verbose:
+        use_file = self.use_file if use_file is None else use_file
+        if not verbose and not use_file:
             return
 
         if type(msg) == str:
@@ -232,6 +269,8 @@ class TCLogger(logging.Logger):
         else:
             prefix_str = ""
 
+        # level is method name of standard logging.Logger:
+        # "debug", "info", "warning", "error", "critical"
         level, color = LOG_METHOD_COLORS[method]
 
         indent_str = " " * (self.log_indent + indent)
@@ -248,14 +287,18 @@ class TCLogger(logging.Logger):
         handler = self.handlers[0]
         handler.terminator = end
 
-        getattr(self, level)(indented_msg, *args, **kwargs)
+        if verbose:
+            getattr(self, level)(indented_msg, *args, **kwargs)
+
+        if use_file:
+            self.log_to_file(
+                decolored(indented_msg), file_path=file_path, file_mode=file_mode
+            )
 
     def route_log(self, method, msg, *args, **kwargs):
-        level, color = LOG_METHOD_COLORS[method]
-        # if level is lower (less important) than self.log_level, do not log
-        if self.LEVEL_NAMES[level] < self.LEVEL_NAMES[self.log_level]:
+        if self.should_suppress(method):
             return
-        functools.partial(self.log, method, msg)(*args, **kwargs)
+        self.log(method, msg, *args, **kwargs)
 
     def err(self, msg: str = "", *args, **kwargs):
         self.route_log("err", msg, *args, **kwargs)
