@@ -231,7 +231,7 @@ class TCLogger(logging.Logger):
 
     def log_to_file(self, msg):
         msg = decolored(msg)
-        with open(self.file_path, mode="a") as f:
+        with open(self.file_path, mode="a", encoding="utf-8") as f:
             f.write(msg + "\n")
 
     def log(
