@@ -276,8 +276,8 @@ def test_log_file():
         file_mode="w",
     )
     logger.erro("This is an erro message")
-    logger.line("This is a  line message", file_path="logger.log", file_mode="a")
-    logger.okay("This is an okay message", file_mode="a")
+    logger.line("This is a  line message")
+    logger.okay("This is an okay message")
 
 
 def test_file_logger():

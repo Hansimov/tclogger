@@ -151,6 +151,9 @@ class TCLogger(logging.Logger):
                 self.file_path = Path(self.file_path)
             else:
                 self.file_path = Path("logger.log")
+            self.file_path.parent.mkdir(parents=True, exist_ok=True)
+            if self.file_mode == "w":
+                open(self.file_path, "w").close()
         else:
             self.file_path = None
 
@@ -226,13 +229,9 @@ class TCLogger(logging.Logger):
             return True
         return False
 
-    def log_to_file(
-        self, msg, file_path: PathType = None, file_mode: Literal["a", "w"] = None
-    ):
-        file_path = self.file_path if file_path is None else file_path
-        file_path = Path(file_path or "logger.log")
-        file_mode = (self.file_mode or "a") if file_mode is None else file_mode
-        with open(file_path, mode=file_mode) as f:
+    def log_to_file(self, msg):
+        msg = decolored(msg)
+        with open(self.file_path, mode="a") as f:
             f.write(msg + "\n")
 
     def log(
@@ -246,8 +245,6 @@ class TCLogger(logging.Logger):
         use_prefix: bool = None,
         verbose: bool = None,
         use_file: bool = None,
-        file_path: PathType = None,
-        file_mode: bool = None,
         *args,
         **kwargs,
     ):
@@ -291,9 +288,7 @@ class TCLogger(logging.Logger):
             getattr(self, level)(indented_msg, *args, **kwargs)
 
         if use_file:
-            self.log_to_file(
-                decolored(indented_msg), file_path=file_path, file_mode=file_mode
-            )
+            self.log_to_file(indented_msg)
 
     def route_log(self, method, msg, *args, **kwargs):
         if self.should_suppress(method):
