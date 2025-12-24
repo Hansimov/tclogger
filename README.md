@@ -43,9 +43,10 @@ from tclogger import Runtimer, OSEnver, shell_cmd
 from tclogger import get_now_ts, get_now_str, get_now_ts_str
 from tclogger import TIMEZONE, set_timezone, tcdatetime
 from tclogger import ts_to_str, str_to_ts, dt_to_str, unify_ts_and_str
-from tclogger import CaseInsensitiveDict, dict_to_str
+from tclogger import CaseInsensitiveDict, dict_to_str, dict_to_lines
 from tclogger import dict_to_table_str
 from tclogger import dict_get, dict_set, dict_get_all, dict_set_all
+from tclogger import dict_flatten
 from tclogger import FileLogger
 from tclogger import TCLogbar, TCLogbarGroup
 from tclogger import brk, brc, brp
@@ -58,6 +59,7 @@ from tclogger import obj_params_dict, obj_params_list, obj_params_tuple
 from tclogger import match_val, match_key, iterate_folder, match_paths
 from tclogger import copy_file, copy_file_relative, copy_folder
 from tclogger import tree_folder
+from tclogger import raise_breakpoint
 
 
 def test_logger_verbose():
@@ -100,6 +102,48 @@ def test_run_timer_and_logger():
         logger.mesg(get_now_ts())
         logger.success(get_now_str())
         logger.note(f"Now: {logstr.mesg(get_now_str())}, ({logstr.file(get_now_ts())})")
+
+
+def test_logger_prefix():
+    # Test without prefix (default)
+    logger.note("> Default: no prefix, no ms, no color")
+    logger.mesg("This is a message without prefix")
+
+    # Test with prefix (no ms, no color)
+    prefix_logger = TCLogger(name="MyApp", use_prefix=True)
+    logger.note("> With prefix (no ms, no color):")
+    prefix_logger.note("This is a note message, no prefix color")
+    prefix_logger.mesg("This is a mesg message, no prefix color")
+    prefix_logger.warn("This is a warn message, no prefix color")
+    prefix_logger.erro("This is a erro message, no prefix color", indent=2)
+
+    # Test with prefix and ms
+    ms_logger = TCLogger(name="MSApp", use_prefix=True, use_prefix_ms=True)
+    logger.note("> With prefix and ms:")
+    ms_logger.note("Note with ms")
+    ms_logger.mesg("Mesg with ms")
+    ms_logger.warn("Warn with ms")
+    ms_logger.okay("Okay with ms (no prefix)", use_prefix=False)
+
+    # Test with prefix, ms and color
+    prefix_logger = TCLogger(
+        name="MyApp", use_prefix=True, use_prefix_ms=True, use_prefix_color=True
+    )
+    prefix_logger.set_level("debug")
+    logger.note("> With prefix, ms and color:")
+    prefix_logger.okay("This is a okay message")
+    prefix_logger.erro("This is a erro message")
+    prefix_logger.hint("This is a hint message")
+    prefix_logger.glow("This is a glow message")
+    prefix_logger.file("This is a file message")
+    prefix_logger.dbug("This is a dbug message")
+
+    # Test with level warning
+    logger.note("> set_level: warning")
+    prefix_logger.set_level("warning")
+    prefix_logger.okay("This is a okay message")
+    prefix_logger.erro("This is a erro message")
+    prefix_logger.hint("This is a hint message")
 
 
 def test_now_and_timezone():
@@ -215,29 +259,54 @@ def test_dict_to_str():
     }
     s = dict_to_str(d, add_quotes=True, max_depth=1)
     logger.success(s)
+
+    print()
     s = dict_to_str(d, add_quotes=False, is_colored=False, max_depth=0)
     print(s)
+
+    print()
+    l = dict_to_lines(d)
+    print(l)
+
+    print()
+    l = dict_to_lines(d, key_prefix="* ")
+    print(l)
 
 
 def test_dict_to_table_str():
     d = {
-        ("alice", "smith"): [25, "enginner"],
-        ("bob", "johnson"): [30, "manager"],
-        ("charlie", "brown"): [22, "intern"],
+        ("alice", "smith"): [25, "enginner", "180.2"],
+        ("bob", "johnson"): [30, "manager", "175.5"],
+        ("charlie", "brown"): [22, "intern", "168.9"],
     }
 
     key_headers = ["first Name", "last Name"]
-    val_headers = ["Age", "Position"]
+    val_headers = ["Age", "Position", "Height"]
 
     table_str = dict_to_table_str(
         d,
         key_headers=key_headers,
         val_headers=val_headers,
         aligns=["l", "l", "r", "l"],
-        default_align="left",
+        default_align="right",
+        sum_at_tail=True,
         is_colored=True,
     )
     print(table_str)
+
+
+def test_log_file():
+    logger = TCLogger(
+        use_prefix=True,
+        use_prefix_color=True,
+        use_prefix_ms=True,
+        use_file=True,
+        # file_path=Path(__file__).parent / "logger.log",
+        file_mode="w",
+    )
+    logger.erro("This is an erro message")
+    logger.line("This is a  line message", file_path="logger.log", file_mode="a")
+    logger.okay("This is an okay message", file_mode="a")
 
 
 def test_file_logger():
@@ -298,7 +367,7 @@ def test_logbar():
             logbar.set_head(f"[{epoch+1}/{epochs}]")
         logbar.grid_mode = "shade"
         logbar.set_desc("THIS IS A SO LONG DESC WHICH IS USED TO TEST LINE UP")
-        logbar.reset()
+        logbar.reset(linebreak=True)
 
 
 def test_logbar_group():
@@ -573,6 +642,53 @@ def test_dict_set_all():
     logger.mesg(dict_to_str(d))
 
 
+def test_dict_flatten():
+    d1 = {
+        "owner": {"name": "影视飓风", "face": "https://face.url"},
+        "stat": {"view": 6999431, "share": 200},
+        "stat.favorite": 100,
+        "title": "黑神话悟空：取经路上的山水风光",
+        "pages": [
+            {
+                "cid": 1428998731,
+                "dimension": {"x": 100, "y": 200},
+                "matrix": [{"mx": 10, "my": 20}, {"mx": 30, "my": 40}],
+            },
+            {
+                "cid": 1428998737,
+                "dimension": {"x": 50, "y": 150},
+                "matrix": [{"mx": 5, "my": 15}, {"mx": 25, "my": 35}],
+            },
+        ],
+    }
+
+    keys = "owner.name"
+    logger.note(f"> Flatten: {keys}")
+    dict_flatten(d1, keys=keys)
+    logger.mesg(dict_to_str(d1))
+
+    keys = ["pages", "cid"]
+    logger.note(f"> Flatten: {keys}")
+    dict_flatten(d1, keys=keys)
+    logger.mesg(dict_to_str(d1))
+
+    keys = "pages.dimension"
+    logger.note(f"> Flatten: {keys}, in_replace=False")
+    d2 = dict_flatten(d1, keys=keys, in_replace=False)
+    logger.mesg(dict_to_str(d2))
+    logger.mesg(f"Is d2 == d1: {d2 == d1}")  # should be False
+
+    keys = "owner"
+    logger.note(f"> Flatten: {keys}")
+    dict_flatten(d1, keys=keys, expand_sub=True)
+    logger.mesg(dict_to_str(d1))
+
+    keys = "stat"
+    logger.note(f"> Flatten: {keys}")
+    dict_flatten(d1, keys=keys, expand_sub=True)
+    logger.mesg(dict_to_str(d1))
+
+
 def test_match_paths():
     root = Path(__file__).parent
     includes = ["*.py", "*.md"]
@@ -590,6 +706,16 @@ def test_match_paths():
     )
     logger.note(f"> Matched paths:")
     logger.mesg(dict_to_str(matched_paths), indent=2)
+
+
+class RaiseBreakpointClass:
+    def run(self):
+        raise_breakpoint(head_n=2, tail_n=2)
+
+
+def test_raise_breakpoint():
+    obj = RaiseBreakpointClass()
+    obj.run()
 
 
 def test_copy_folder():
@@ -618,6 +744,7 @@ if __name__ == "__main__":
     test_logger_level()
     test_fillers()
     test_run_timer_and_logger()
+    test_logger_prefix()
     test_now_and_timezone()
     test_dt_to_str()
     test_color()
@@ -627,6 +754,7 @@ if __name__ == "__main__":
     test_dict_to_table_str()
     test_align_dict_list()
     test_list_of_dicts()
+    test_log_file()
     test_file_logger()
     test_logbar()
     test_logbar_group()
@@ -642,9 +770,11 @@ if __name__ == "__main__":
     test_match_val()
     test_match_key()
     test_dict_set_all()
+    test_dict_flatten()
     test_match_paths()
     test_copy_folder()
     test_tree_folder()
+    test_raise_breakpoint()
 
     # python example.py
 
