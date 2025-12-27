@@ -277,7 +277,10 @@ def test_log_file():
     )
     logger.erro("This is an erro message")
     logger.line("This is a  line message")
-    logger.okay("This is an okay message")
+    logger.okay("This is a  half message", end=", ")
+    logger.okay("this is another half")
+    logger.mesg("This is whole message")
+    logger.note("This is multi lines, \nwith line break", indent=2)
 
 
 def test_file_logger():

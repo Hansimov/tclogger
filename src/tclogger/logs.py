@@ -144,6 +144,7 @@ class TCLogger(logging.Logger):
         self.log_indents = []
         self.log_level = "info"
         self.log_levels = []
+        self.is_at_beg = True
 
     def init_file_path(self):
         if self.use_file:
@@ -229,10 +230,16 @@ class TCLogger(logging.Logger):
             return True
         return False
 
-    def log_to_file(self, msg):
+    def update_is_at_beg(self, end):
+        if end is None or "\n" in end or "\r" in end:
+            self.is_at_beg = True
+        else:
+            self.is_at_beg = False
+
+    def log_to_file(self, msg, end):
         msg = decolored(msg)
         with open(self.file_path, mode="a", encoding="utf-8") as f:
-            f.write(msg + "\n")
+            f.write(msg + end)
 
     def log(
         self,
@@ -271,24 +278,32 @@ class TCLogger(logging.Logger):
         level, color = LOG_METHOD_COLORS[method]
 
         indent_str = " " * (self.log_indent + indent)
-        indented_msg = "\n".join(
-            [
-                prefix_str + indent_str + logstr.colored_str(line, method)
-                for line in msg_str.split("\n")
-            ]
+
+        if self.is_at_beg:
+            beg_str = prefix_str + indent_str
+        else:
+            beg_str = ""
+
+        whole_msg = "\n".join(
+            [beg_str + logstr.colored_str(line, method) for line in msg_str.split("\n")]
         )
 
+        if end is None:
+            end = "\n"
+
+        self.update_is_at_beg(end)
+
         if fill:
-            indented_msg = add_fills(indented_msg, fill_side=fill_side)
+            whole_msg = add_fills(whole_msg, fill_side=fill_side)
 
         handler = self.handlers[0]
         handler.terminator = end
 
         if verbose:
-            getattr(self, level)(indented_msg, *args, **kwargs)
+            getattr(self, level)(whole_msg, *args, **kwargs)
 
         if use_file:
-            self.log_to_file(indented_msg)
+            self.log_to_file(whole_msg, end=end)
 
     def route_log(self, method, msg, *args, **kwargs):
         if self.should_suppress(method):
