@@ -36,6 +36,8 @@ class TCLogbar:
         show_iter_per_second: bool = True,
         show_color: bool = True,
         flush_interval: float = 0.1,
+        elapsed_window_duration: float = None,
+        elapsed_sample_interval: float = 5.0,
         grid_symbols: str = " ▏▎▍▌▋▊▉█",
         grid_shades: str = "░▒▓█",
         grid_mode: Literal["symbol", "shade"] = "symbol",
@@ -53,6 +55,8 @@ class TCLogbar:
         self.show_iter_per_second = show_iter_per_second
         self.show_color = show_color
         self.flush_interval = flush_interval
+        self.elapsed_window_duration = elapsed_window_duration
+        self.elapsed_sample_interval = elapsed_sample_interval
         self.grid_symbols = grid_symbols
         self.grid_shades = grid_shades
         self.grid_mode = grid_mode
@@ -73,12 +77,6 @@ class TCLogbar:
 
     def is_grouped(self):
         return self.group is not None and self.node_idx is not None
-
-    def elapsed_count(self):
-        return self.count - self.start_count
-
-    def remain_count(self):
-        return self.total - self.count
 
     def move_cursor(self):
         self.cursor.move(row=self.line_height - 1)
@@ -121,6 +119,71 @@ class TCLogbar:
         else:
             if self.verbose:
                 self.write("\n")
+
+    def _update_window_count(self):
+        # TODO
+        pass
+
+    def _elapsed_count(self):
+        return self.count - self.start_count
+
+    def _elapsed_window_count(self):
+        # TODO
+        pass
+
+    def _remain_count(self):
+        return self.total - self.count
+
+    def _is_remain_seconds_calcable(self):
+        return (
+            self.is_num(self.total)
+            and self.is_num(self.count)
+            and self._elapsed_count() > 0
+            and self._remain_count() >= 0
+        )
+
+    def _should_use_window(self):
+        return (
+            self.elapsed_window_duration
+            and self.dt_seconds >= self.elapsed_window_duration
+        )
+
+    def _calc_dt_seconds(self) -> float:
+        self.dt = self.now - self.start_t
+        self.dt_seconds = dt_to_sec(self.dt, precision=3)
+
+    def _calc_remain_seconds_by_window(self):
+        return (
+            self.elapsed_window_duration
+            * self._remain_count()
+            / self._elapsed_window_count()
+        )
+
+    def _calc_remain_seconds_by_global(self):
+        return self.dt_seconds * self._remain_count() / self._elapsed_count()
+
+    def _calc_remain_seconds(self):
+        if self._should_use_window():
+            return self._calc_remain_seconds_by_window()
+        else:
+            return self._calc_remain_seconds_by_global()
+
+    def _is_iter_per_second_calcable(self):
+        return self.is_num(self.count) and self.count > 0 and self.dt_seconds > 0
+
+    def _calc_iter_per_second_by_window(self):
+        return round(
+            self._elapsed_window_count() / self.elapsed_window_duration, ndigits=1
+        )
+
+    def _calc_iter_per_second_by_global(self):
+        return round(self._elapsed_count() / self.dt_seconds, ndigits=1)
+
+    def _calc_iter_per_second(self):
+        if self._should_use_window():
+            return self._calc_iter_per_second_by_window()
+        else:
+            return self._calc_iter_per_second_by_global()
 
     def update(
         self,
@@ -171,27 +234,18 @@ class TCLogbar:
             if desc is not None:
                 self.desc = desc
 
-            self.dt = self.now - self.start_t
-            dt_seconds = dt_to_sec(self.dt, precision=3)
+            self._calc_dt_seconds()
+            self._update_window_count()
 
             if remain_seconds is not None and self.is_num(remain_seconds):
                 self.remain_seconds = remain_seconds
-            elif (
-                self.is_num(self.total)
-                and self.is_num(self.count)
-                and self.elapsed_count() > 0
-                and self.remain_count() >= 0
-            ):
-                self.remain_seconds = (
-                    dt_seconds * self.remain_count() / self.elapsed_count()
-                )
+            elif self._is_remain_seconds_calcable():
+                self.remain_seconds = self._calc_remain_seconds()
             else:
                 self.remain_seconds = None
 
-            if self.is_num(self.count) and self.count > 0 and dt_seconds > 0:
-                self.iter_per_second = round(
-                    self.elapsed_count() / dt_seconds, ndigits=1
-                )
+            if self.is_num(self.count) and self.count > 0 and self.dt_seconds > 0:
+                self.iter_per_second = self._calc_iter_per_second()
             else:
                 self.iter_per_second = None
 
