@@ -306,7 +306,10 @@ def test_log_file():
     )
     logger.erro("This is an erro message")
     logger.line("This is a  line message")
-    logger.okay("This is an okay message")
+    logger.okay("This is a  half message", end=", ")
+    logger.okay("this is another half")
+    logger.mesg("This is whole message")
+    logger.note("This is multi lines, \nwith line break", indent=2)
 
 
 def test_file_logger():
@@ -431,6 +434,59 @@ def test_logbar_verbose():
     logger.note("> Here should show bar1 and bar2")
     TCLogbarGroup([logbar1, logbar2], verbose=True)
     print()
+
+
+def test_logbar_window():
+    logbar = TCLogbar(
+        count=0,
+        total=600,
+        window_duration=10.0,
+        window_point_interval=1.0,
+        window_flush_interval=0.5,
+    )
+
+    def _fast(n: int, s: float = 0.05):
+        for i in range(n):
+            time.sleep(s)
+            logbar.update(1)
+
+    def _medium(n: int, s: float = 0.1):
+        for i in range(n):
+            time.sleep(s)
+            logbar.update(1)
+
+    def _slow(n: int, s: float = 0.2):
+        for i in range(n):
+            time.sleep(s)
+            logbar.update(1)
+
+    logger.note("> Fast:")
+    _fast(300)
+    logger.note("\n> Medium:")
+    _medium(200)
+    logger.note("\n> Slow:")
+    _slow(100)
+
+
+def test_logbar_window_speed():
+    total = 10000000
+    logbar = TCLogbar(
+        count=0,
+        total=total,
+        window_duration=3.0,
+        window_point_interval=1.0,
+        window_flush_interval=0.25,
+    )
+
+    def _loop(n: int):
+        for i in range(n):
+            logbar.update(1)
+
+    logger.note("> Test logbar speed")
+    _loop(total)
+
+    # with interval: ~ 480k it/s
+    #   immediately: ~  21k it/s
 
 
 def test_decorations():
@@ -760,6 +816,8 @@ if __name__ == "__main__":
     test_logbar_group()
     test_logbar_total()
     test_logbar_verbose()
+    test_logbar_window()
+    test_logbar_window_speed()
     test_decorations()
     test_math()
     test_get_by_threshold()
