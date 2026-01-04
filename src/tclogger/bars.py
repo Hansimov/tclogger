@@ -3,7 +3,7 @@ import os
 import sys
 import threading
 
-from datetime import timedelta
+from datetime import datetime
 from typing import Union, Literal
 
 from .times import get_now, t_to_str, dt_to_str, dt_to_sec
@@ -11,6 +11,104 @@ from .maths import int_bits
 from .logs import logstr
 from .colors import decolored
 from .cursors import CursorController
+
+
+class ElapseWindow:
+    def __init__(
+        self,
+        init_t: datetime = None,
+        count: int = 0,
+        window_duration: float = 60.0,
+        window_point_interval: float = 1.0,
+        window_flush_interval: float = 0.5,
+    ):
+        self.init_t = init_t or get_now()
+        self.count = count
+        self.window_duration = window_duration
+        self.window_point_interval = window_point_interval
+        self.window_flush_interval = window_flush_interval
+        # list of (datetime, count)
+        self.window_points: list[tuple[datetime, int]] = [(init_t, count)]
+
+    def _window_start_t(self) -> datetime:
+        return self.window_points[0][0]
+
+    def _window_end_t(self) -> datetime:
+        return self.window_points[-1][0]
+
+    def _window_start_count(self) -> int:
+        return self.window_points[0][1]
+
+    def _window_end_count(self) -> int:
+        return self.window_points[-1][1]
+
+    def update_now_and_count(self, now: datetime, count: int):
+        self.now = now
+        self.count = count
+
+    def _calc_window_dt_seconds(self) -> float:
+        window_dt = self._window_end_t() - self._window_start_t()
+        return dt_to_sec(window_dt, precision=3)
+
+    def _calc_start_to_now_dt_seconds(self) -> float:
+        now_dt = self.now - self._window_start_t()
+        return dt_to_sec(now_dt, precision=3)
+
+    def _calc_end_to_now_dt_seconds(self) -> float:
+        now_dt = self.now - self._window_end_t()
+        return dt_to_sec(now_dt, precision=3)
+
+    def _should_add_new_point(self) -> bool:
+        if len(self.window_points) <= 1:
+            return True
+        window_max_seconds = self.window_point_interval * (len(self.window_points) - 1)
+        if self._calc_start_to_now_dt_seconds() >= window_max_seconds:
+            return True
+        return False
+
+    def _should_del_old_point(self) -> bool:
+        if len(self.window_points) <= 2:
+            return False
+        if self._calc_window_dt_seconds() > self.window_duration:
+            return True
+        return False
+
+    def _should_flush_window(self) -> bool:
+        if self._calc_end_to_now_dt_seconds() >= self.window_flush_interval:
+            return True
+        return False
+
+    def flush_window(self):
+        # add new point or update last point
+        if self._should_add_new_point():
+            self.window_points.append((self.now, self.count))
+        else:
+            self.window_points[-1] = (self.now, self.count)
+        # remove old outdated points
+        while True:
+            if self._should_del_old_point():
+                self.window_points.pop(0)
+            else:
+                break
+
+    def _calc_window_elapsed_count(self) -> int:
+        return self._window_end_count() - self._window_start_count()
+
+    def calc_remain_seconds_by_window(self, remain_count: int) -> float:
+        return (
+            self._calc_window_dt_seconds()
+            * remain_count
+            / self._calc_window_elapsed_count()
+        )
+
+    def calc_iter_per_second_by_window(self) -> float:
+        # TODO
+        pass
+
+    def reset_window(self, start_t: datetime, count: int):
+        self.init_t = start_t
+        self.count = count
+        self.window_points = [(start_t, count)]
 
 
 class TCLogbar:
@@ -36,8 +134,9 @@ class TCLogbar:
         show_iter_per_second: bool = True,
         show_color: bool = True,
         flush_interval: float = 0.1,
-        elapsed_window_duration: float = None,
-        elapsed_sample_interval: float = 5.0,
+        window_duration: float = None,
+        window_point_interval: float = 1.0,
+        window_flush_interval: float = 0.5,
         grid_symbols: str = " ▏▎▍▌▋▊▉█",
         grid_shades: str = "░▒▓█",
         grid_mode: Literal["symbol", "shade"] = "symbol",
@@ -55,8 +154,6 @@ class TCLogbar:
         self.show_iter_per_second = show_iter_per_second
         self.show_color = show_color
         self.flush_interval = flush_interval
-        self.elapsed_window_duration = elapsed_window_duration
-        self.elapsed_sample_interval = elapsed_sample_interval
         self.grid_symbols = grid_symbols
         self.grid_shades = grid_shades
         self.grid_mode = grid_mode
@@ -65,6 +162,16 @@ class TCLogbar:
         self.init_t = get_now()
         self.start_t = self.init_t
         self.flush_t = self.init_t
+        self.window_duration = window_duration
+        if window_duration:
+            self.window = ElapseWindow(
+                init_t=self.init_t,
+                window_duration=window_duration,
+                window_point_interval=window_point_interval,
+                window_flush_interval=window_flush_interval,
+            )
+        else:
+            self.window = None
         self.cursor = CursorController()
         self.line_height: int = 1
         self.group: TCLogbarGroup = None
@@ -120,19 +227,19 @@ class TCLogbar:
             if self.verbose:
                 self.write("\n")
 
-    def _update_window_count(self):
-        # TODO
-        pass
-
     def _elapsed_count(self):
         return self.count - self.start_count
 
-    def _window_elapsed_count(self):
-        # TODO
-        pass
-
     def _remain_count(self):
         return self.total - self.count
+
+    def _calc_dt_seconds(self) -> float:
+        self.dt = self.now - self.start_t
+        self.dt_seconds = dt_to_sec(self.dt, precision=3)
+        return self.dt_seconds
+
+    def _should_use_window(self):
+        return self.window and self.dt_seconds >= self.window.window_duration
 
     def _is_remain_seconds_calcable(self):
         return (
@@ -142,31 +249,12 @@ class TCLogbar:
             and self._remain_count() >= 0
         )
 
-    def _should_use_window(self):
-        return (
-            self.elapsed_window_duration
-            and self.dt_seconds >= self.elapsed_window_duration
-        )
-
-    def _calc_dt_seconds(self) -> float:
-        self.dt = self.now - self.start_t
-        self.dt_seconds = dt_to_sec(self.dt, precision=3)
-
-    def _calc_window_dt_seconds(self) -> float:
-        # TODO
-        pass
-
-    def _calc_remain_seconds_by_window(self) -> float:
-        return (
-            self.window_dt_seconds * self._remain_count() / self._window_elapsed_count()
-        )
-
     def _calc_remain_seconds_by_global(self) -> float:
         return self.dt_seconds * self._remain_count() / self._elapsed_count()
 
     def _calc_remain_seconds(self) -> float:
         if self._should_use_window():
-            return self._calc_remain_seconds_by_window()
+            return self.window.calc_remain_seconds_by_window(self._remain_count())
         else:
             return self._calc_remain_seconds_by_global()
 
@@ -178,21 +266,18 @@ class TCLogbar:
             and self.dt_seconds > 0
         )
 
-    def _calc_iter_per_second_by_window(self) -> float:
-        return round(self._window_elapsed_count() / self.window_dt_seconds, ndigits=1)
-
     def _calc_iter_per_second_by_global(self) -> float:
         return round(self._elapsed_count() / self.dt_seconds, ndigits=1)
 
     def _calc_iter_per_second(self) -> float:
         if self._should_use_window():
-            return self._calc_iter_per_second_by_window()
+            return self.window.calc_iter_per_second_by_window()
         else:
             return self._calc_iter_per_second_by_global()
 
     def _should_flush(self) -> bool:
         flush_dt = self.now - self.flush_t
-        flush_seconds = flush_dt.seconds + flush_dt.microseconds / 1000000
+        flush_seconds = dt_to_sec(flush_dt, precision=3)
         return flush_seconds >= self.flush_interval
 
     def update(
@@ -236,6 +321,7 @@ class TCLogbar:
         else:
             pass
 
+        # flush
         if flush is True:
             if head is not None:
                 self.head = head
@@ -244,9 +330,10 @@ class TCLogbar:
 
             self._calc_dt_seconds()
 
-            if self._should_use_window():
-                self._update_window_count()
-                self._calc_window_dt_seconds()
+            if self.window:
+                self.window.update_now_and_count(self.now, self.count)
+                if self.window._should_flush_window():
+                    self.window.flush_window()
 
             if remain_seconds is not None and self.is_num(remain_seconds):
                 self.remain_seconds = remain_seconds
@@ -380,6 +467,8 @@ class TCLogbar:
             self.linebreak()
         self.count = 0
         self.start_t = get_now()
+        if self.window:
+            self.window.reset_window(self.start_t, self.count)
 
     def set_cols(self, cols: int = None):
         self.cols = cols
