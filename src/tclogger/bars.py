@@ -102,8 +102,10 @@ class ElapseWindow:
         )
 
     def calc_iter_per_second_by_window(self) -> float:
-        # TODO
-        pass
+        return round(
+            self._calc_window_elapsed_count() / self._calc_window_dt_seconds(),
+            ndigits=1,
+        )
 
     def reset_window(self, start_t: datetime, count: int):
         self.init_t = start_t
@@ -308,11 +310,14 @@ class TCLogbar:
 
         if flush is True:
             pass
-        elif self.is_num(self.percent_float) and (
+
+        if self.is_num(self.percent_float) and (
             self.percent_float >= 100 or self.percent_float <= 0
         ):
-            flush = True
-        elif self.flush_interval is not None:
+            # use high but throttled flush rate when "exceed" complete
+            self.flush_interval = 0.001
+
+        if self.flush_interval is not None:
             if self._should_flush():
                 flush = True
                 self.flush_t = self.now

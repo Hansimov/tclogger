@@ -407,6 +407,59 @@ def test_logbar_verbose():
     print()
 
 
+def test_logbar_window():
+    logbar = TCLogbar(
+        count=0,
+        total=600,
+        window_duration=10.0,
+        window_point_interval=1.0,
+        window_flush_interval=0.5,
+    )
+
+    def _fast(n: int, s: float = 0.05):
+        for i in range(n):
+            time.sleep(s)
+            logbar.update(1)
+
+    def _medium(n: int, s: float = 0.1):
+        for i in range(n):
+            time.sleep(s)
+            logbar.update(1)
+
+    def _slow(n: int, s: float = 0.2):
+        for i in range(n):
+            time.sleep(s)
+            logbar.update(1)
+
+    logger.note("> Fast:")
+    _fast(300)
+    logger.note("\n> Medium:")
+    _medium(200)
+    logger.note("\n> Slow:")
+    _slow(100)
+
+
+def test_logbar_window_speed():
+    total = 10000000
+    logbar = TCLogbar(
+        count=0,
+        total=total,
+        window_duration=3.0,
+        window_point_interval=1.0,
+        window_flush_interval=0.25,
+    )
+
+    def _loop(n: int):
+        for i in range(n):
+            logbar.update(1)
+
+    logger.note("> Test logbar speed")
+    _loop(total)
+
+    # with interval: ~ 480k it/s
+    #   immediately: ~  21k it/s
+
+
 def test_decorations():
     text = "Hello World"
     logger.note(f"Brackets: {logstr.mesg(brk(text))}")
@@ -728,12 +781,14 @@ if __name__ == "__main__":
     # test_dict_to_table_str()
     # test_align_dict_list()
     # test_list_of_dicts()
-    test_log_file()
+    # test_log_file()
     # test_file_logger()
     # test_logbar()
     # test_logbar_group()
     # test_logbar_total()
     # test_logbar_verbose()
+    # test_logbar_window()
+    test_logbar_window_speed()
     # test_decorations()
     # test_math()
     # test_get_by_threshold()
