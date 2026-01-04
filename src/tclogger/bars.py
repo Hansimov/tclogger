@@ -18,8 +18,8 @@ class TCLogbar:
         0: logstr.file,
         25: logstr.note,
         50: logstr.hint,
-        75: logstr.err,
-        100: logstr.success,
+        75: logstr.erro,
+        100: logstr.okay,
     }
 
     def __init__(
@@ -127,7 +127,7 @@ class TCLogbar:
     def _elapsed_count(self):
         return self.count - self.start_count
 
-    def _elapsed_window_count(self):
+    def _window_elapsed_count(self):
         # TODO
         pass
 
@@ -152,38 +152,48 @@ class TCLogbar:
         self.dt = self.now - self.start_t
         self.dt_seconds = dt_to_sec(self.dt, precision=3)
 
-    def _calc_remain_seconds_by_window(self):
+    def _calc_window_dt_seconds(self) -> float:
+        # TODO
+        pass
+
+    def _calc_remain_seconds_by_window(self) -> float:
         return (
-            self.elapsed_window_duration
-            * self._remain_count()
-            / self._elapsed_window_count()
+            self.window_dt_seconds * self._remain_count() / self._window_elapsed_count()
         )
 
-    def _calc_remain_seconds_by_global(self):
+    def _calc_remain_seconds_by_global(self) -> float:
         return self.dt_seconds * self._remain_count() / self._elapsed_count()
 
-    def _calc_remain_seconds(self):
+    def _calc_remain_seconds(self) -> float:
         if self._should_use_window():
             return self._calc_remain_seconds_by_window()
         else:
             return self._calc_remain_seconds_by_global()
 
-    def _is_iter_per_second_calcable(self):
-        return self.is_num(self.count) and self.count > 0 and self.dt_seconds > 0
-
-    def _calc_iter_per_second_by_window(self):
-        return round(
-            self._elapsed_window_count() / self.elapsed_window_duration, ndigits=1
+    def _is_iter_per_second_calcable(self) -> bool:
+        return (
+            self.show_iter_per_second
+            and self.is_num(self.count)
+            and self.count > 0
+            and self.dt_seconds > 0
         )
 
-    def _calc_iter_per_second_by_global(self):
+    def _calc_iter_per_second_by_window(self) -> float:
+        return round(self._window_elapsed_count() / self.window_dt_seconds, ndigits=1)
+
+    def _calc_iter_per_second_by_global(self) -> float:
         return round(self._elapsed_count() / self.dt_seconds, ndigits=1)
 
-    def _calc_iter_per_second(self):
+    def _calc_iter_per_second(self) -> float:
         if self._should_use_window():
             return self._calc_iter_per_second_by_window()
         else:
             return self._calc_iter_per_second_by_global()
+
+    def _should_flush(self) -> bool:
+        flush_dt = self.now - self.flush_t
+        flush_seconds = flush_dt.seconds + flush_dt.microseconds / 1000000
+        return flush_seconds >= self.flush_interval
 
     def update(
         self,
@@ -218,13 +228,11 @@ class TCLogbar:
         ):
             flush = True
         elif self.flush_interval is not None:
-            flush_dt = self.now - self.flush_t
-            flush_seconds = flush_dt.seconds + flush_dt.microseconds / 1000000
-            if flush_seconds < self.flush_interval:
-                flush = False
-            else:
+            if self._should_flush():
                 flush = True
                 self.flush_t = self.now
+            else:
+                flush = False
         else:
             pass
 
@@ -235,7 +243,10 @@ class TCLogbar:
                 self.desc = desc
 
             self._calc_dt_seconds()
-            self._update_window_count()
+
+            if self._should_use_window():
+                self._update_window_count()
+                self._calc_window_dt_seconds()
 
             if remain_seconds is not None and self.is_num(remain_seconds):
                 self.remain_seconds = remain_seconds
@@ -244,7 +255,7 @@ class TCLogbar:
             else:
                 self.remain_seconds = None
 
-            if self.is_num(self.count) and self.count > 0 and self.dt_seconds > 0:
+            if self._is_iter_per_second_calcable():
                 self.iter_per_second = self._calc_iter_per_second()
             else:
                 self.iter_per_second = None
