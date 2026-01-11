@@ -4,6 +4,7 @@ from .fills import add_fills
 from .colors import COLOR_TYPE, colored, decolored
 from .logs import logclr
 
+from copy import deepcopy
 from typing import Literal
 
 HAT_COLOR = logclr.NOTE
@@ -63,16 +64,15 @@ def align_to_fill_side(align: str) -> Literal["left", "right", "both"]:
         return "both"
 
 
-def dict_to_table_str(
-    d: dict,
-    key_headers: StrsType = None,
-    val_headers: StrsType = None,
+def rows_to_table_str(
+    rows: list[list],
+    headers: list[str] = None,
     aligns: StrsType = None,
-    default_align: Literal["left", "right"] = "right",
+    default_align: Literal["left", "right"] = "left",
     sum_at_tail: bool = False,
     header_case: Literal["raw", "lower", "upper", "capitalize"] = "upper",
     header_wsch: Literal[" ", "_", "-", "", None] = "_",
-    col_gap_len: int = 3,
+    col_gap_len: int = 2,
     is_bounded: bool = False,
     bound_char: str = VERT,
     is_hatted: bool = True,
@@ -84,17 +84,16 @@ def dict_to_table_str(
     sepr_color: COLOR_TYPE = SEPR_COLOR,
     bound_color: COLOR_TYPE = BOUND_COLOR,
 ) -> str:
-    if not d:
+    if not rows:
         return ""
 
-    if not key_headers or not val_headers:
-        k1, v1 = next(iter(d.items()))
-        if not key_headers:
-            key_headers = norm_any_to_str_list(k1)
-        if not val_headers:
-            val_headers = norm_any_to_str_list(v1)
+    if not headers:
+        headers = norm_any_to_str_list(rows[0])
+        table_rows = rows[1:]
+    else:
+        table_rows = rows
 
-    table_headers: list[str] = key_headers + val_headers
+    table_headers: list[str] = deepcopy(headers)
 
     if header_wsch is not None:
         table_headers = [h.replace(" ", header_wsch) for h in table_headers]
@@ -107,13 +106,6 @@ def dict_to_table_str(
     elif hc.startswith("c"):
         table_headers = [h.capitalize() for h in table_headers]
     # else: raw
-
-    table_rows: list[list[str]] = []
-    for key, val in d.items():
-        key_strs = norm_any_to_str_list(key)
-        val_strs = norm_any_to_str_list(val)
-        row = key_strs + val_strs
-        table_rows.append(row)
 
     cols = len(table_headers)
 
@@ -154,7 +146,10 @@ def dict_to_table_str(
 
     table_headers_rows = [table_headers] + table_rows
     col_widths = [
-        max(chars_len(row[i]) if i < len(row) else 0 for row in table_headers_rows)
+        max(
+            chars_len(decolored(row[i])) if i < len(row) else 0
+            for row in table_headers_rows
+        )
         for i in range(cols)
     ]
 
@@ -252,3 +247,67 @@ def dict_to_table_str(
         table_str = f"{hat_str}\n{table_str}\n{hat_str}"
 
     return table_str
+
+
+def dict_to_rows(d: dict) -> list[list]:
+    rows: list[list] = []
+    for key, val in d.items():
+        key_strs = norm_any_to_str_list(key)
+        val_strs = norm_any_to_str_list(val)
+        row = key_strs + val_strs
+        rows.append(row)
+    return rows
+
+
+def dict_to_table_str(
+    d: dict,
+    key_headers: StrsType = None,
+    val_headers: StrsType = None,
+    aligns: StrsType = None,
+    default_align: Literal["left", "right"] = "left",
+    sum_at_tail: bool = False,
+    header_case: Literal["raw", "lower", "upper", "capitalize"] = "upper",
+    header_wsch: Literal[" ", "_", "-", "", None] = "_",
+    col_gap_len: int = 2,
+    is_bounded: bool = False,
+    bound_char: str = VERT,
+    is_hatted: bool = True,
+    hat_char: str = "=",
+    is_colored: bool = True,
+    hat_color: COLOR_TYPE = HAT_COLOR,
+    header_color: COLOR_TYPE = HEADER_COLOR,
+    cell_color: COLOR_TYPE = CELL_COLOR,
+    sepr_color: COLOR_TYPE = SEPR_COLOR,
+    bound_color: COLOR_TYPE = BOUND_COLOR,
+) -> str:
+    if not d:
+        return ""
+    if not key_headers or not val_headers:
+        k1, v1 = next(iter(d.items()))
+        if not key_headers:
+            key_headers = norm_any_to_str_list(k1)
+        if not val_headers:
+            val_headers = norm_any_to_str_list(v1)
+    table_headers: list[str] = key_headers + val_headers
+    table_rows = dict_to_rows(d)
+
+    return rows_to_table_str(
+        rows=table_rows,
+        headers=table_headers,
+        aligns=aligns,
+        default_align=default_align,
+        sum_at_tail=sum_at_tail,
+        header_case=header_case,
+        header_wsch=header_wsch,
+        col_gap_len=col_gap_len,
+        is_bounded=is_bounded,
+        bound_char=bound_char,
+        is_hatted=is_hatted,
+        hat_char=hat_char,
+        is_colored=is_colored,
+        hat_color=hat_color,
+        header_color=header_color,
+        cell_color=cell_color,
+        sepr_color=sepr_color,
+        bound_color=bound_color,
+    )

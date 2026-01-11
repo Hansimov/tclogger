@@ -13,7 +13,7 @@ from .types import LIST_TYPES, DictListType
 from .exceptions import BreakpointException, raise_breakpoint
 from .colors import FONT_TYPE, COLOR_TYPE, BG_COLOR_TYPE
 from .colors import colored, decolored
-from .logs import TCLogger, logger, TCLogstr, logstr, log_error
+from .logs import TCLogger, logger, TCLogstr, logstr, TCLogclr, logclr, log_error
 from .fills import add_fills
 from .times import get_now, get_now_ts, get_now_str, get_now_ts_str, get_date_str
 from .times import TIMEZONE, set_timezone, tcdatetime
@@ -29,7 +29,7 @@ from .maths import int_bits, max_key_len, chars_len
 from .maths import is_str_float, to_digits, get_by_threshold
 from .formats import DictStringifier, dict_to_str, dict_to_lines
 from .tables import is_listable, norm_any_to_str_list, norm_any_to_type_list
-from .tables import dict_to_table_str
+from .tables import dict_to_table_str, rows_to_table_str
 from .files import FileLogger
 from .bars import TCLogbar, TCLogbarGroup
 from .decorations import brk, brc, brp
