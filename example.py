@@ -248,7 +248,7 @@ def test_dict_to_table_str():
     d = {
         ("alice", "smith"): [25, "enginner", "180.2"],
         ("bob", "johnson"): [30, "manager", "175.5"],
-        ("charlie", "brown"): [22, "intern", "168.9"],
+        ("charlie", "brown"): [22, "intern", "168.91"],
     }
 
     key_headers = ["first Name", "last Name"]
@@ -258,8 +258,8 @@ def test_dict_to_table_str():
         d,
         key_headers=key_headers,
         val_headers=val_headers,
-        aligns=["l", "l", "r", "l"],
-        default_align="right",
+        # aligns=["l", "l", "r", "l"],
+        # default_align="right",
         sum_at_tail=True,
         header_case="upper",
         is_bounded=True,
@@ -270,15 +270,15 @@ def test_dict_to_table_str():
     )
     print(table_str)
 
-    # ======================================================
-    # *  FIRST_NAME   LAST_NAME   AGE   POSITION   HEIGHT  *
-    # *  ------------------------------------------------  *
-    # *  alice        smith        25   enginner    180.2  *
-    # *  bob          johnson      30   manager     175.5  *
-    # *  charlie      brown        22   intern      168.9  *
-    # *  ------------------------------------------------  *
-    # *               Total        77               524.6  *
-    # ======================================================
+    # ==================================================
+    # *  FIRST_NAME  LAST_NAME  AGE  POSITION  HEIGHT  *
+    # *  --------------------------------------------  *
+    # *  alice       smith       25  enginner   180.2  *
+    # *  bob         johnson     30  manager    175.5  *
+    # *  charlie     brown       22  intern     168.9  *
+    # *  --------------------------------------------  *
+    # *              Total       77             524.6  *
+    # ==================================================
 
 
 def test_log_file():

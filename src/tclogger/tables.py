@@ -64,6 +64,18 @@ def align_to_fill_side(align: str) -> Literal["left", "right", "both"]:
         return "both"
 
 
+def determine_aligns_from_row(
+    row: list, default_align: Literal["left", "right"] = "left"
+) -> list[str]:
+    aligns: list[str] = []
+    for cell in row:
+        if is_str_float(decolored(cell)):
+            aligns.append("right")
+        else:
+            aligns.append(default_align)
+    return aligns
+
+
 def rows_to_table_str(
     rows: list[list],
     headers: list[str] = None,
@@ -87,17 +99,19 @@ def rows_to_table_str(
     if not rows:
         return ""
 
+    # set table headers and table rows
     if not headers:
         headers = norm_any_to_str_list(rows[0])
         table_rows = rows[1:]
     else:
-        table_rows = rows
+        table_rows = rows[:]
 
     table_headers: list[str] = deepcopy(headers)
 
     if header_wsch is not None:
         table_headers = [h.replace(" ", header_wsch) for h in table_headers]
 
+    # set header case
     hc = header_case.lower() if header_case else ""
     if hc.startswith("l"):
         table_headers = [h.lower() for h in table_headers]
@@ -108,6 +122,12 @@ def rows_to_table_str(
     # else: raw
 
     cols = len(table_headers)
+
+    # determine aligns
+    if not aligns:
+        aligns = determine_aligns_from_row(table_rows[-1], default_align=default_align)
+    if len(aligns) < cols:
+        aligns += [default_align] * (cols - len(aligns))
 
     # add total row
     is_sum_at_tail = sum_at_tail and cols > 1
@@ -144,6 +164,7 @@ def rows_to_table_str(
         else:
             is_sum_at_tail = False
 
+    # calc column widths
     table_headers_rows = [table_headers] + table_rows
     col_widths = [
         max(
@@ -153,9 +174,8 @@ def rows_to_table_str(
         for i in range(cols)
     ]
 
-    # wert = WERT
+    # set colors
     sepr = SEPR
-
     if is_colored:
         table_headers = [colored(h, header_color) for h in table_headers]
         if is_sum_at_tail:
@@ -170,21 +190,14 @@ def rows_to_table_str(
             table_rows = [
                 [colored(cell, cell_color) for cell in row] for row in table_rows
             ]
-        # wert = colored(WERT, VERT_COLOR)
         sepr = colored(SEPR, sepr_color)
 
+    # set sep lines and col chars
     sep_lines = [sepr * col_widths[i] for i in range(cols)]
 
-    if not aligns:
-        aligns = [default_align] * cols
-    if len(aligns) < cols:
-        aligns += [default_align] * (cols - len(aligns))
-
-    # col_join = wert.join
     jcol = " " * col_gap_len
     col_join = jcol.join
     sep_join = (sepr * len(jcol)).join
-
     header_line_str = col_join(
         add_fills(
             text=table_headers[i],
@@ -195,9 +208,9 @@ def rows_to_table_str(
         )
         for i in range(cols)
     )
-    # sep_line_str = col_join(sep_lines)
     sep_line_str = sep_join(sep_lines)
 
+    # add vertical bounds
     if is_bounded:
         header_line_str = add_bounds(
             header_line_str,
@@ -212,6 +225,7 @@ def rows_to_table_str(
             bound_color=bound_color,
         )
 
+    # build row lines
     rows_lines = []
     for row in table_rows:
         row_line = col_join(
@@ -230,6 +244,7 @@ def rows_to_table_str(
             )
         rows_lines.append(row_line)
 
+    # build final table string
     if is_sum_at_tail:
         row_lines_str = (
             "\n".join(rows_lines[:-1]) + f"\n{sep_line_str}\n{rows_lines[-1]}"
@@ -239,6 +254,7 @@ def rows_to_table_str(
 
     table_str = f"{header_line_str}\n{sep_line_str}\n{row_lines_str}"
 
+    # add hat
     if is_hatted:
         hat_len = chars_len(decolored(table_str.splitlines()[0]))
         hat_str = add_fills(filler=hat_char, total_width=hat_len)
