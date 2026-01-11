@@ -252,7 +252,7 @@ def test_dict_to_table_str():
     }
 
     key_headers = ["first Name", "last Name"]
-    val_headers = ["Age", "Position", "Height"]
+    val_headers = ["AGE", "Position", "Height"]
 
     table_str = dict_to_table_str(
         d,
@@ -261,9 +261,24 @@ def test_dict_to_table_str():
         aligns=["l", "l", "r", "l"],
         default_align="right",
         sum_at_tail=True,
+        header_case="upper",
+        is_bounded=True,
+        bound_char="* ",
+        is_hatted=True,
+        hat_char="=",
         is_colored=True,
     )
     print(table_str)
+
+    # ======================================================
+    # *  FIRST_NAME   LAST_NAME   AGE   POSITION   HEIGHT  *
+    # *  ------------------------------------------------  *
+    # *  alice        smith        25   enginner    180.2  *
+    # *  bob          johnson      30   manager     175.5  *
+    # *  charlie      brown        22   intern      168.9  *
+    # *  ------------------------------------------------  *
+    # *               Total        77               524.6  *
+    # ======================================================
 
 
 def test_log_file():
@@ -778,7 +793,7 @@ if __name__ == "__main__":
     # test_case_insensitive_dict()
     # test_dict_get_and_set()
     # test_dict_to_str()
-    # test_dict_to_table_str()
+    test_dict_to_table_str()
     # test_align_dict_list()
     # test_list_of_dicts()
     # test_log_file()
@@ -788,7 +803,7 @@ if __name__ == "__main__":
     # test_logbar_total()
     # test_logbar_verbose()
     # test_logbar_window()
-    test_logbar_window_speed()
+    # test_logbar_window_speed()
     # test_decorations()
     # test_math()
     # test_get_by_threshold()

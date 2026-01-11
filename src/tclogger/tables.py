@@ -1,15 +1,18 @@
 from .types import StrsType, LIST_TYPES
 from .maths import chars_len, is_str_float
 from .fills import add_fills
-from .colors import colored
+from .colors import COLOR_TYPE, colored, decolored
+from .logs import logclr
 
 from typing import Literal
 
-HEAD_COLOR = "light_cyan"
-CELL_COLOR = "light_blue"
-SEPR_COLOR = "dark_grey"
-VERT_COLOR = "dark_grey"
-TOTAL_COLOR = "light_green"
+HAT_COLOR = logclr.NOTE
+HEADER_COLOR = logclr.MESG
+CELL_COLOR = logclr.FILE
+SEPR_COLOR = logclr.DBUG
+BOUND_COLOR = logclr.DBUG
+VERT_COLOR = logclr.DBUG
+TOTAL_COLOR = logclr.OKAY
 
 SEPR = "-"
 CSEPR = colored(SEPR, SEPR_COLOR)
@@ -36,11 +39,19 @@ def norm_any_to_type_list(val) -> list[str]:
         return [type(val).__name__]
 
 
-def add_bounds(line: str, is_colored: bool = False) -> str:
+def add_bounds(
+    line: str,
+    bound_char: str = VERT,
+    is_colored: bool = False,
+    bound_color: COLOR_TYPE = BOUND_COLOR,
+) -> str:
+    end_bound_char = bound_char[::-1]
     if not is_colored:
-        return f"{VERT} {line} {VERT}"
+        return f"{bound_char} {line} {end_bound_char}"
     else:
-        return f"{CVERT} {line} {CVERT}"
+        beg_bound_str = colored(bound_char, bound_color)
+        end_bound_str = colored(end_bound_char, bound_color)
+        return f"{beg_bound_str} {line} {end_bound_str}"
 
 
 def align_to_fill_side(align: str) -> Literal["left", "right", "both"]:
@@ -56,11 +67,22 @@ def dict_to_table_str(
     d: dict,
     key_headers: StrsType = None,
     val_headers: StrsType = None,
-    capitalize_headers: bool = True,
     aligns: StrsType = None,
     default_align: Literal["left", "right"] = "right",
     sum_at_tail: bool = False,
-    is_colored: bool = False,
+    header_case: Literal["raw", "lower", "upper", "capitalize"] = "upper",
+    header_wsch: Literal[" ", "_", "-", "", None] = "_",
+    col_gap_len: int = 3,
+    is_bounded: bool = False,
+    bound_char: str = VERT,
+    is_hatted: bool = True,
+    hat_char: str = "=",
+    is_colored: bool = True,
+    hat_color: COLOR_TYPE = HAT_COLOR,
+    header_color: COLOR_TYPE = HEADER_COLOR,
+    cell_color: COLOR_TYPE = CELL_COLOR,
+    sepr_color: COLOR_TYPE = SEPR_COLOR,
+    bound_color: COLOR_TYPE = BOUND_COLOR,
 ) -> str:
     if not d:
         return ""
@@ -73,8 +95,18 @@ def dict_to_table_str(
             val_headers = norm_any_to_str_list(v1)
 
     table_headers: list[str] = key_headers + val_headers
-    if capitalize_headers:
+
+    if header_wsch is not None:
+        table_headers = [h.replace(" ", header_wsch) for h in table_headers]
+
+    hc = header_case.lower() if header_case else ""
+    if hc.startswith("l"):
+        table_headers = [h.lower() for h in table_headers]
+    elif hc.startswith("u"):
+        table_headers = [h.upper() for h in table_headers]
+    elif hc.startswith("c"):
         table_headers = [h.capitalize() for h in table_headers]
+    # else: raw
 
     table_rows: list[list[str]] = []
     for key, val in d.items():
@@ -126,32 +158,39 @@ def dict_to_table_str(
         for i in range(cols)
     ]
 
-    sep_lines = [SEPR * col_widths[i] for i in range(cols)]
-    wert = WERT
+    # wert = WERT
+    sepr = SEPR
 
     if is_colored:
-        table_headers = [colored(h, HEAD_COLOR) for h in table_headers]
+        table_headers = [colored(h, header_color) for h in table_headers]
         if is_sum_at_tail:
             colored_sum_row = [
                 colored(cell, TOTAL_COLOR) if cell else cell for cell in table_rows[-1]
             ]
             colored_non_sum_rows = [
-                [colored(cell, CELL_COLOR) for cell in row] for row in table_rows[:-1]
+                [colored(cell, cell_color) for cell in row] for row in table_rows[:-1]
             ]
             table_rows = colored_non_sum_rows + [colored_sum_row]
         else:
             table_rows = [
-                [colored(cell, CELL_COLOR) for cell in row] for row in table_rows
+                [colored(cell, cell_color) for cell in row] for row in table_rows
             ]
-        sep_lines = [colored(s, SEPR_COLOR) for s in sep_lines]
-        wert = colored(WERT, VERT_COLOR)
+        # wert = colored(WERT, VERT_COLOR)
+        sepr = colored(SEPR, sepr_color)
+
+    sep_lines = [sepr * col_widths[i] for i in range(cols)]
 
     if not aligns:
         aligns = [default_align] * cols
     if len(aligns) < cols:
         aligns += [default_align] * (cols - len(aligns))
 
-    header_line_str = wert.join(
+    # col_join = wert.join
+    jcol = " " * col_gap_len
+    col_join = jcol.join
+    sep_join = (sepr * len(jcol)).join
+
+    header_line_str = col_join(
         add_fills(
             text=table_headers[i],
             filler=" ",
@@ -161,14 +200,26 @@ def dict_to_table_str(
         )
         for i in range(cols)
     )
-    header_line_str = add_bounds(header_line_str, is_colored=is_colored)
+    # sep_line_str = col_join(sep_lines)
+    sep_line_str = sep_join(sep_lines)
 
-    sep_line_str = wert.join(sep_lines)
-    sep_line_str = add_bounds(sep_line_str, is_colored=is_colored)
+    if is_bounded:
+        header_line_str = add_bounds(
+            header_line_str,
+            bound_char=bound_char,
+            is_colored=is_colored,
+            bound_color=bound_color,
+        )
+        sep_line_str = add_bounds(
+            sep_line_str,
+            bound_char=bound_char,
+            is_colored=is_colored,
+            bound_color=bound_color,
+        )
 
     rows_lines = []
     for row in table_rows:
-        row_line = wert.join(
+        row_line = col_join(
             add_fills(
                 text=row[i],
                 filler=" ",
@@ -178,7 +229,10 @@ def dict_to_table_str(
             )
             for i in range(cols)
         )
-        row_line = add_bounds(row_line, is_colored=is_colored)
+        if is_bounded:
+            row_line = add_bounds(
+                row_line, bound_char=bound_char, is_colored=is_colored
+            )
         rows_lines.append(row_line)
 
     if is_sum_at_tail:
@@ -189,4 +243,12 @@ def dict_to_table_str(
         row_lines_str = "\n".join(rows_lines)
 
     table_str = f"{header_line_str}\n{sep_line_str}\n{row_lines_str}"
+
+    if is_hatted:
+        hat_len = chars_len(decolored(table_str.splitlines()[0]))
+        hat_str = add_fills(filler=hat_char, total_width=hat_len)
+        if is_colored:
+            hat_str = colored(hat_str, hat_color)
+        table_str = f"{hat_str}\n{table_str}\n{hat_str}"
+
     return table_str
