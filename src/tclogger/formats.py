@@ -287,8 +287,8 @@ def dict_to_lines(
     add_quotes: bool = False,
     is_colored: bool = True,
     key_prefix: str = "",
-    key_colors: list[str] = ["light_magenta"],
-    value_colors: list[str] = ["light_cyan"],
+    key_colors: list[str] = ["light_cyan"],
+    value_colors: list[str] = ["light_blue"],
 ) -> str:
     ds = DictStringifier(
         indent=indent,
