@@ -11,6 +11,7 @@ from .args import MergedArgParser
 from .types import PathType, PathsType, KeyType, KeysType, StrsType, IntsType
 from .types import LIST_TYPES, DictListType
 from .exceptions import BreakpointException, raise_breakpoint
+from .colors import FONT_TYPE, COLOR_TYPE, BG_COLOR_TYPE
 from .colors import colored, decolored
 from .logs import TCLogger, logger, TCLogstr, logstr, log_error
 from .fills import add_fills

@@ -1,10 +1,11 @@
 import logging
 
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
 from .types import PathType
-from .colors import colored, decolored
+from .colors import colored, decolored, COLOR_TYPE
 from .fills import add_fills
 from .times import get_now
 
@@ -22,7 +23,7 @@ LOG_METHOD_COLORS = {
     "success": ("info", "light_green"),
     "fail": ("critical", "light_red"),
     "back": ("debug", "light_cyan"),
-    "dbug": ("debug", "light_cyan"),
+    "dbug": ("debug", "dark_grey"),
 }
 
 LOG_METHOD_BG_COLORS = {
@@ -87,6 +88,25 @@ class TCLogstr:
 
 
 logstr = TCLogstr()
+
+
+@dataclass
+class TCLogclr:
+    ERRO: COLOR_TYPE = "red"
+    WARN: COLOR_TYPE = "light_red"
+    HINT: COLOR_TYPE = "light_yellow"
+    GLOW: COLOR_TYPE = "black"
+    NOTE: COLOR_TYPE = "light_magenta"
+    MESG: COLOR_TYPE = "light_cyan"
+    FILE: COLOR_TYPE = "light_blue"
+    LINE: COLOR_TYPE = "white"
+    OKAY: COLOR_TYPE = "light_green"
+    FAIL: COLOR_TYPE = "light_red"
+    BACK: COLOR_TYPE = "light_cyan"
+    DBUG: COLOR_TYPE = "dark_grey"
+
+
+logclr = TCLogclr()
 
 
 class TCLogger(logging.Logger):

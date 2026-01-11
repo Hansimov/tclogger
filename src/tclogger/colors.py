@@ -127,6 +127,9 @@ def colored(
 ) -> str:
     text = str(text)
 
+    if not color and not bg_color and not fonts:
+        return text
+
     color_ints = []
     if color:
         color_ints.append(COLORS[color])
