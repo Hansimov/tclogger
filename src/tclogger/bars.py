@@ -210,7 +210,11 @@ class TCLogbar:
             self.move_cursor()
             self.write(msg)
 
-        terminal_width = os.get_terminal_size().columns
+        try:
+            terminal_width = os.get_terminal_size().columns
+        except OSError:
+            terminal_width = 120
+
         if len(decolored(msg)) > terminal_width:
             self.line_height = math.ceil(len(decolored(msg)) / terminal_width)
         else:
