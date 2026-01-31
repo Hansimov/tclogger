@@ -176,7 +176,7 @@ class TCLogbar:
             )
         else:
             self.window = None
-        self.cursor = CursorController()
+        self.cursor = CursorController(flush=True)
         self.line_height: int = 1
         self.group: TCLogbarGroup = None
         self.node_idx: int = None
@@ -190,12 +190,17 @@ class TCLogbar:
         return self.group is not None and self.node_idx is not None
 
     def move_cursor(self):
-        self.cursor.move(row=self.line_height - 1)
-        self.cursor.erase_line()
+        # Move up to the first line of this bar's content
+        if self.line_height > 1:
+            self.cursor.move(row=self.line_height - 1)
+        # Move to beginning of line first, then erase entire line
         self.cursor.move_to_beg()
+        self.cursor.erase_line("beg_to_end")
 
     def write(self, msg: str):
         sys.stdout.write(msg)
+        # Clear from cursor to end of line to remove any trailing remnants
+        sys.stdout.write("\033[0K")
         sys.stdout.flush()
 
     def log(self, msg: str = None):
@@ -520,7 +525,7 @@ class TCLogbarGroup:
         self.bars = bars
         self.show_at_init = show_at_init
         self.verbose = verbose
-        self.cursor = CursorController()
+        self.cursor = CursorController(flush=True)
         self.lock = threading.Lock()
         self.init_bars()
 
@@ -539,6 +544,8 @@ class TCLogbarGroup:
     def write(self, msg: str, flush: bool = True):
         with self.lock:
             sys.stdout.write(msg)
+            # Clear from cursor to end of line to remove any trailing remnants
+            sys.stdout.write("\033[0K")
             if flush:
                 sys.stdout.flush()
 
@@ -565,6 +572,7 @@ class TCLogbarGroup:
             up_rows = self.bars[node_idx].line_height - 1
             self.cursor.move(row=up_rows)
 
-        self.cursor.erase_line()
+        # Move to beginning of line first, then erase entire line
         self.cursor.move_to_beg()
+        self.cursor.erase_line("beg_to_end")
         self.log_node_idx = node_idx
