@@ -95,15 +95,17 @@ class ElapseWindow:
         return self._window_end_count() - self._window_start_count()
 
     def calc_remain_seconds_by_window(self, remain_count: int) -> float:
-        return (
-            self._calc_window_dt_seconds()
-            * remain_count
-            / self._calc_window_elapsed_count()
-        )
+        elapsed_count = self._calc_window_elapsed_count()
+        if elapsed_count <= 0:
+            return float("inf")
+        return self._calc_window_dt_seconds() * remain_count / elapsed_count
 
     def calc_iter_per_second_by_window(self) -> float:
+        dt_seconds = self._calc_window_dt_seconds()
+        if dt_seconds <= 0:
+            return 0.0
         return round(
-            self._calc_window_elapsed_count() / self._calc_window_dt_seconds(),
+            self._calc_window_elapsed_count() / dt_seconds,
             ndigits=1,
         )
 
@@ -273,6 +275,8 @@ class TCLogbar:
         )
 
     def _calc_iter_per_second_by_global(self) -> float:
+        if self.dt_seconds <= 0:
+            return 0.0
         return round(self._elapsed_count() / self.dt_seconds, ndigits=1)
 
     def _calc_iter_per_second(self) -> float:
@@ -429,8 +433,10 @@ class TCLogbar:
         if self.iter_per_second is not None:
             if self.iter_per_second > 1 or self.iter_per_second == 0:
                 iter_per_second_str = f"({round(self.iter_per_second)} it/s)"
-            else:
+            elif self.iter_per_second > 0:
                 iter_per_second_str = f"({round(1/self.iter_per_second)} s/it)"
+            else:
+                iter_per_second_str = ""
         else:
             iter_per_second_str = ""
 
