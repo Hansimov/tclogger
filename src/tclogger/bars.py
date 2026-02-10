@@ -97,7 +97,7 @@ class ElapseWindow:
     def calc_remain_seconds_by_window(self, remain_count: int) -> float:
         elapsed_count = self._calc_window_elapsed_count()
         if elapsed_count <= 0:
-            return float("inf")
+            return None
         return self._calc_window_dt_seconds() * remain_count / elapsed_count
 
     def calc_iter_per_second_by_window(self) -> float:

@@ -138,3 +138,47 @@ def unify_ts_and_str(
     if isinstance(t, int):
         return t, ts_to_str(t)
     return t, t
+
+
+def dt_to_zh_str(dt: Union[timedelta, int, float]) -> str:
+    """Convert a timedelta (or seconds) to a concise Chinese relative time string.
+
+    Examples:
+        - 400 days  -> "1年1个月前"
+        - 60 days   -> "2个月前"
+        - 5 days    -> "5天前"
+        - 3 hours   -> "3小时前"
+        - 30 minutes -> "30分钟前"
+    """
+    if isinstance(dt, timedelta):
+        total_seconds = int(dt.total_seconds())
+    else:
+        total_seconds = int(dt)
+
+    if total_seconds < 0:
+        total_seconds = abs(total_seconds)
+
+    minutes = total_seconds // 60
+    hours = total_seconds // 3600
+    days = total_seconds // 86400
+    months = days // 30
+    years = days // 365
+
+    if years >= 1:
+        remain_months = (days - years * 365) // 30
+        if remain_months > 0:
+            return f"{years}年{remain_months}个月前"
+        return f"{years}年前"
+    elif months >= 1:
+        remain_days = days - months * 30
+        if remain_days > 0:
+            return f"{months}个月{remain_days}天前"
+        return f"{months}个月前"
+    elif days >= 1:
+        return f"{days}天前"
+    elif hours >= 1:
+        return f"{hours}小时前"
+    elif minutes >= 1:
+        return f"{minutes}分钟前"
+    else:
+        return "刚刚"
