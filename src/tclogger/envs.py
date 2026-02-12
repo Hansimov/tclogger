@@ -36,12 +36,58 @@ class OSEnver:
             return dict(self.secrets.items())
 
 
-def shell_cmd(cmd, getoutput=False, showcmd=True, env=None):
+def shell_cmd(cmd, getoutput=False, showcmd=True, env=None, sudo=False):
+    """Run a shell command.
+
+    Args:
+        cmd: The command to run.
+        getoutput: If True, return command output as string.
+        showcmd: If True, log the command before running.
+        env: Environment variables for the subprocess.
+        sudo: If True, run with root privileges. Auto-detects mode:
+            - Already root (euid==0): run as-is, no sudo needed.
+            - SUDOPASS env set: pipe password to `sudo -S` each time.
+            - Otherwise: prepend `sudo` (may prompt for password).
+    """
+    # Handle sudo privilege escalation
+    use_sudo_s = False
+    sudopass = ""
+    if sudo and os.geteuid() != 0:
+        sudopass = os.environ.get("SUDOPASS", "")
+        if sudopass:
+            cmd = f"sudo -S {cmd}"
+            use_sudo_s = True
+        else:
+            cmd = f"sudo {cmd}"
+
     if showcmd:
         logger.info(colored(f"\n$ [{os.getcwd()}]", "light_blue"))
         logger.info(colored(f"  $ {cmd}\n", "light_cyan"))
-    if getoutput:
-        output = subprocess.getoutput(cmd)
-        return output
+
+    if use_sudo_s:
+        # Pipe SUDOPASS to sudo -S via stdin
+        if getoutput:
+            result = subprocess.run(
+                cmd,
+                shell=True,
+                text=True,
+                input=sudopass + "\n",
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                env=env,
+            )
+            return result.stdout
+        else:
+            subprocess.run(
+                cmd,
+                shell=True,
+                text=True,
+                input=sudopass + "\n",
+                env=env,
+            )
     else:
-        subprocess.run(cmd, shell=True, env=env)
+        if getoutput:
+            output = subprocess.getoutput(cmd)
+            return output
+        else:
+            subprocess.run(cmd, shell=True, env=env)
