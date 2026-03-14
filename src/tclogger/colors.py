@@ -108,6 +108,7 @@ COLOR_RESET = "\033[0m"
 RE_COLORED = (
     r"(?P<colored_text>\033\[(?P<color_ints>\d+(\;\d+)*)m(?P<text>[^\033]*)\033\[0m)"
 )
+RE_ANSI_ESCAPE = r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])"
 
 
 def color_text_with_ints(text: str, color_ints: list[int]) -> str:
@@ -164,20 +165,4 @@ def colored(
 def decolored(text: str) -> str:
     if not isinstance(text, str):
         return text
-    matches = re.finditer(RE_COLORED, text)
-    if matches:
-        res = ""
-        prev_end = 0
-        for match in matches:
-            start = match.start()
-            end = match.end()
-            if start > prev_end:
-                res += text[prev_end:start]
-            res += match.group("text")
-            prev_end = end
-        if prev_end < len(text):
-            res += text[prev_end:]
-    else:
-        res = text
-
-    return res
+    return re.sub(RE_ANSI_ESCAPE, "", text)
