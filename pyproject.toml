@@ -1,6 +1,6 @@
 [project]
 name = "tclogger"
-version = "1.11.3"
+version = "1.11.3.1"
 authors = [
     { name="Hansimov" },
 ]
